@@ -66,14 +66,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PS4_Cheater.exe" size="57256">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="PS4_Cheater.exe" size="57768">
       <assemblyIdentity name="PS4_Cheater" version="1.0.0.0" language="neutral" processorArchitecture="amd64" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>fQ/CuooMWmJVqpDvkBQCIY/F6Sw=</dsig:DigestValue>
+        <dsig:DigestValue>pL98oZwNOMjTBlyk26AybzL6MC0=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

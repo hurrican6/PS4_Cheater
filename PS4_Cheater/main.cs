@@ -34,7 +34,21 @@
 
         private const int VERSION_LIST_DEFAULT = VERSION_LIST_405;
 
-        public main()
+        private const int CHEAT_CODE_HEADER_VERSION = 0;
+        private const int CHEAT_CODE_HEADER_PROCESS_NAME = 1;
+        private const int CHEAT_CODE_HEADER_ELEMENT_COUNT = CHEAT_CODE_HEADER_PROCESS_NAME + 1;
+
+        private const int CHEAT_CODE_TYPE = 0;
+        private const int CHEAT_CODE_DATA_TYPE_SECTION_ID = 1;
+        private const int CHEAT_CODE_DATA_TYPE_ADDRESS_OFFSET = 2;
+        private const int CHEAT_CODE_DATA_TYPE_VALUE_TYPE = 3;
+        private const int CHEAT_CODE_DATA_TYPE_VALUE = 4;
+        private const int CHEAT_CODE_DATA_TYPE_FLAG = 5;
+        private const int CHEAT_CODE_DATA_TYPE_DESCRIPTION = 6;
+
+        private const int CHEAT_CODE_DATA_TYPE_ELEMENT_COUNT = CHEAT_CODE_DATA_TYPE_DESCRIPTION + 1;
+
+    public main()
         {   
             this.InitializeComponent();
         }
@@ -614,6 +628,55 @@
             }
         }
 
+        private void load_1_2_cheat_code(string[] cheats)
+        {
+            for (int i = 1; i < cheats.Length; ++i)
+            {
+                string cheat = cheats[i];
+                try
+                {
+                    string[] cheat_elements = cheat.Split('|');
+
+                    if (cheat_elements.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    if (cheat_elements[CHEAT_CODE_TYPE] == "data")
+                    {
+                        if (cheat_elements.Length < CHEAT_CODE_DATA_TYPE_ELEMENT_COUNT)
+                        {
+                            continue;
+                        }
+
+                        int idx = int.Parse(cheat_elements[CHEAT_CODE_DATA_TYPE_SECTION_ID]);
+                        if (idx >= processManager.mapped_section_list.Count || idx < 0)
+                        {
+                            MessageBox.Show("Invalid address.");
+                            continue;
+                        }
+
+                        ulong address = ulong.Parse(cheat_elements[CHEAT_CODE_DATA_TYPE_ADDRESS_OFFSET], NumberStyles.HexNumber) + processManager.mapped_section_list[idx].Start;
+                        string type = cheat_elements[CHEAT_CODE_DATA_TYPE_VALUE_TYPE];
+                        string value = cheat_elements[CHEAT_CODE_DATA_TYPE_VALUE];
+                        string section = processManager.GetSectionName(idx);
+                        ulong flag = ulong.Parse(cheat_elements[CHEAT_CODE_DATA_TYPE_FLAG], NumberStyles.HexNumber);
+                        string description = cheat_elements[CHEAT_CODE_DATA_TYPE_DESCRIPTION];
+
+                        add_to_cheat_list_view(String.Format("{0:X}", address), type, value, section, flag.ToString(), description);
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                catch (Exception exception)
+                {
+                    MessageBox.Show(exception.Message);
+                }
+            }
+        }
+
         private void load_address_btn_Click(object sender, EventArgs e)
         {
             open_file_dialog.Filter = "Cheat files (*.cht)|*.cht";
@@ -629,67 +692,32 @@
             {
                 return;
             }
+
             string header = cheats[0];
             string[] header_items = header.Split('|');
-            if (header_items.Length < 2)
+
+            if (header_items.Length < CHEAT_CODE_HEADER_ELEMENT_COUNT)
             {
                 return;
             }
 
-            string ver = header_items[0];
-            string process_name = header_items[1];
+            string version = header_items[CHEAT_CODE_HEADER_VERSION];
 
-            if (ver != "1.2")
+            if (version == "1.2")
+            {
+                string process_name = header_items[CHEAT_CODE_HEADER_PROCESS_NAME];
+                if (process_name != (string)processes_comboBox.SelectedItem)
+                {
+                    MessageBox.Show("Invalid process.");
+                    return;
+                }
+
+                load_1_2_cheat_code(cheats);
+            }
+            else
             {
                 MessageBox.Show("Invalid version.");
                 return;
-            }
-
-            if (process_name != (string)processes_comboBox.SelectedItem)
-            {
-                MessageBox.Show("Invalid process.");
-                return;
-            }
-
-            for (int i = 1; i < cheats.Length; ++i)
-            {
-                string cheat = cheats[i];
-                try
-                {
-                    string[] items = cheat.Split('|');
-
-                    if (items.Length < 7)
-                    {
-                        continue;
-                    }
-                    if (items[0] != "data")
-                    {
-                        continue;
-                    }
-                    int idx = int.Parse(items[1]);
-                    if (idx >= processManager.mapped_section_list.Count || idx < 0)
-                    {
-                        MessageBox.Show("Invalid address.");
-                        continue;
-                    }
-
-                    ulong address = ulong.Parse(items[2], NumberStyles.HexNumber) + processManager.mapped_section_list[idx].Start;
-
-                    string type = items[3];
-
-                    string value = items[4];
-
-                    string section = processManager.GetSectionName(idx);
-
-                    ulong flag = ulong.Parse(items[5], NumberStyles.HexNumber);
-                    string description = items[6];
-
-                    add_to_cheat_list_view(String.Format("{0:X}", address), type, value, section, flag.ToString(), description);
-                }
-                catch (Exception exception)
-                {
-                    MessageBox.Show(exception.Message);
-                }
             }
         }
 
