@@ -1,0 +1,3 @@
+[submodule "jkpatch"]
+	path = jkpatch
+	url = git@github.com:xemio/jkpatch.git

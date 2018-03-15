@@ -1,6 +1,0 @@
-D:\PS4\PS4_Cheater\librpc\bin\Debug\librpc.dll
-D:\PS4\PS4_Cheater\librpc\bin\Debug\librpc.pdb
-D:\PS4\PS4_Cheater\librpc\obj\Debug\librpc.csproj.CoreCompileInputs.cache
-D:\PS4\PS4_Cheater\librpc\obj\Debug\librpc.dll
-D:\PS4\PS4_Cheater\librpc\obj\Debug\librpc.pdb
-D:\PS4\PS4_Cheater\librpc\obj\Debug\librpc.csprojResolveAssemblyReference.cache
