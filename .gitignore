@@ -13,6 +13,10 @@
 *.userprefs
 
 # Build results
+PS4_Cheater/bin
+PS4_Cheater/obj
+jkpatch/librpc/bin
+jkpatch/librpc/obj
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
