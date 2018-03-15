@@ -4,17 +4,17 @@
   <description asmv2:publisher="PS4_Cheater" asmv2:product="PS4_Cheater" xmlns="urn:schemas-microsoft-com:asm.v1" />
   <deployment install="true" mapFileExtensions="true" />
   <compatibleFrameworks xmlns="urn:schemas-microsoft-com:clickonce.v2">
-    <framework targetVersion="4.0" profile="Full" supportedRuntime="4.0.30319" />
+    <framework targetVersion="4.6.1" profile="Full" supportedRuntime="4.0.30319" />
   </compatibleFrameworks>
   <dependency>
-    <dependentAssembly dependencyType="install" codebase="PS4_Cheater.exe.manifest" size="4275">
+    <dependentAssembly dependencyType="install" codebase="PS4_Cheater.exe.manifest" size="5064">
       <assemblyIdentity name="PS4_Cheater.exe" version="1.2.1.2" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="amd64" type="win32" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
-        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>ls6GF3hvaLYvxJtRpCiplDDUyeE=</dsig:DigestValue>
+        <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
+        <dsig:DigestValue>pGfsxwLgkrxnbpXA2T0tKug+07DeaTgfcAV5iuwxG2c=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
