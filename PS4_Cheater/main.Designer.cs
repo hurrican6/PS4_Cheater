@@ -167,6 +167,7 @@ namespace PS4_Cheater
             // 
             // load_cheat_list_btn
             // 
+            this.load_cheat_list_btn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.load_cheat_list_btn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(38)))));
             this.load_cheat_list_btn.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
             this.load_cheat_list_btn.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
@@ -192,6 +193,7 @@ namespace PS4_Cheater
             // 
             // save_cheat_list_btn
             // 
+            this.save_cheat_list_btn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.save_cheat_list_btn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(38)))));
             this.save_cheat_list_btn.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
             this.save_cheat_list_btn.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
@@ -233,6 +235,9 @@ namespace PS4_Cheater
             // cheat_list_view
             // 
             this.cheat_list_view.AllowUserToAddRows = false;
+            this.cheat_list_view.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.cheat_list_view.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.cheat_list_view.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.cheat_list_view_address,
@@ -241,7 +246,6 @@ namespace PS4_Cheater
             this.cheat_list_view_section,
             this.cheat_list_view_lock,
             this.cheat_list_view_description});
-            this.cheat_list_view.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.cheat_list_view.Location = new System.Drawing.Point(0, 36);
             this.cheat_list_view.MultiSelect = false;
             this.cheat_list_view.Name = "cheat_list_view";
@@ -249,6 +253,7 @@ namespace PS4_Cheater
             this.cheat_list_view.Size = new System.Drawing.Size(703, 254);
             this.cheat_list_view.TabIndex = 1;
             this.cheat_list_view.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.cheat_list_view_CellEndEdit);
+            this.cheat_list_view.RowsRemoved += new System.Windows.Forms.DataGridViewRowsRemovedEventHandler(this.cheat_list_view_RowsRemoved);
             // 
             // cheat_list_view_address
             // 
@@ -287,6 +292,8 @@ namespace PS4_Cheater
             // 
             // section_list_box
             // 
+            this.section_list_box.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.section_list_box.ContextMenuStrip = this.section_list_menu;
             this.section_list_box.FormattingEnabled = true;
             this.section_list_box.HorizontalScrollbar = true;
@@ -320,6 +327,8 @@ namespace PS4_Cheater
             // 
             // value_box
             // 
+            this.value_box.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.value_box.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(38)))));
             this.value_box.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.value_box.ForeColor = System.Drawing.Color.White;
@@ -456,6 +465,8 @@ namespace PS4_Cheater
             // 
             // processes_comboBox
             // 
+            this.processes_comboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.processes_comboBox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(38)))));
             this.processes_comboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.processes_comboBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -469,6 +480,8 @@ namespace PS4_Cheater
             // 
             // ip_box
             // 
+            this.ip_box.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.ip_box.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(38)))));
             this.ip_box.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.ip_box.ForeColor = System.Drawing.Color.White;
@@ -483,6 +496,7 @@ namespace PS4_Cheater
             // 
             // port_box
             // 
+            this.port_box.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.port_box.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(38)))));
             this.port_box.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.port_box.ForeColor = System.Drawing.Color.White;
@@ -497,6 +511,8 @@ namespace PS4_Cheater
             // 
             // send_payload_btn
             // 
+            this.send_payload_btn.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.send_payload_btn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(38)))));
             this.send_payload_btn.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
             this.send_payload_btn.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
@@ -517,6 +533,8 @@ namespace PS4_Cheater
             // 
             // get_processes_btn
             // 
+            this.get_processes_btn.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.get_processes_btn.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.get_processes_btn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(38)))));
             this.get_processes_btn.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
@@ -560,6 +578,8 @@ namespace PS4_Cheater
             // 
             // progressBar
             // 
+            this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.progressBar.Location = new System.Drawing.Point(12, 476);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(275, 23);
@@ -567,6 +587,8 @@ namespace PS4_Cheater
             // 
             // compareList
             // 
+            this.compareList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.compareList.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(38)))));
             this.compareList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.compareList.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -588,6 +610,8 @@ namespace PS4_Cheater
             // 
             // valueTypeList
             // 
+            this.valueTypeList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.valueTypeList.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(38)))));
             this.valueTypeList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.valueTypeList.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -596,6 +620,7 @@ namespace PS4_Cheater
             this.valueTypeList.Items.AddRange(new object[] {
             "4 bytes",
             "2 bytes",
+            "8 bytes",
             "float"});
             this.valueTypeList.Location = new System.Drawing.Point(12, 311);
             this.valueTypeList.Name = "valueTypeList";
@@ -614,6 +639,8 @@ namespace PS4_Cheater
             // 
             // next_scan_btn
             // 
+            this.next_scan_btn.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.next_scan_btn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(38)))));
             this.next_scan_btn.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
             this.next_scan_btn.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
@@ -634,6 +661,8 @@ namespace PS4_Cheater
             // 
             // new_scan_btn
             // 
+            this.new_scan_btn.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.new_scan_btn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(38)))));
             this.new_scan_btn.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
             this.new_scan_btn.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
@@ -654,6 +683,8 @@ namespace PS4_Cheater
             // 
             // refresh_btn
             // 
+            this.refresh_btn.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.refresh_btn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(37)))), ((int)(((byte)(38)))));
             this.refresh_btn.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
             this.refresh_btn.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
@@ -707,11 +738,11 @@ namespace PS4_Cheater
             this.Controls.Add(this.parent);
             this.DoubleBuffered = true;
             this.ForeColor = System.Drawing.Color.Silver;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Name = "main";
             this.Opacity = 0.99D;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "PS4 Cheater 1.2.2";
+            this.Text = "PS4 Cheater";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.main_FormClosing);
             this.Load += new System.EventHandler(this.main_Load);
             ((System.ComponentModel.ISupportInitialize)(this.cheat_list_view)).EndInit();

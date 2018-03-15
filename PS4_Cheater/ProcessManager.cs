@@ -13,7 +13,7 @@ namespace PS4_Cheater
     {
         public uint AddressOffset;
 
-        public uint MemoryValue;
+        public ulong MemoryValue;
     }
 
     public class AddressList
@@ -61,7 +61,7 @@ namespace PS4_Cheater
 
                 if (address.AddressOffset == filtered.AddressOffset)
                 {
-                    byte[] value = memoryHelper.UintToBytes(filtered.MemoryValue);
+                    byte[] value = memoryHelper.UlongToBytes(filtered.MemoryValue);
 
                     byte[] compare_value = memoryHelper.GetCompareBytes(address, default_compare_value);
 
@@ -104,7 +104,7 @@ namespace PS4_Cheater
             AddressList = new AddressList();
         }
 
-        public AddressList getFilteredAddressList(ProcessManager processManager,
+        public AddressList getFilteredAddressList(ProcessManager processManager, MemoryHelper memoryHelper,
             string value, BackgroundWorker worker, ref ulong percent_len, int start, float percent)
         {
             AddressList filtered_list = new AddressList();
@@ -137,11 +137,11 @@ namespace PS4_Cheater
                 percent_len += (ulong)cur_length;
                 worker.ReportProgress(start + (int)(((float)percent_len / processManager.TotalMemorySize) * 100 * percent));
 
-                byte[] buffer = processManager.MemoryHelper.ReadMemory(address, (int)cur_length);
+                byte[] buffer = MemoryHelper.ReadMemory(address, (int)cur_length);
 
-                byte[] match_value = processManager.MemoryHelper.StringToBytes(value);
+                byte[] match_value = memoryHelper.StringToBytes(value);
 
-                processManager.MemoryHelper.CompareWithFilterList(match_value, address, buffer, filtered_list);
+                memoryHelper.CompareWithFilterList(match_value, address, buffer, filtered_list);
 
                 address += (ulong)cur_length;
             }
@@ -154,30 +154,28 @@ namespace PS4_Cheater
         public ulong TotalMemorySize { get; set; }
         public int ProcessID { get; set; }
 
-        public MemoryHelper MemoryHelper { get; set; }
-
-        public List<MappedSection> mapped_section_list { get; set; }
+        public List<MappedSection> MappedSectionList { get; }
 
         public ProcessManager()
         {
-            mapped_section_list = new List<MappedSection>();
+            MappedSectionList = new List<MappedSection>();
         }
 
         public MappedSection GetMappedSection(int idx)
         {
-            return mapped_section_list[idx];
+            return MappedSectionList[idx];
         }
 
         public int GetSectionInfoCount()
         {
-            return mapped_section_list.Count;
+            return MappedSectionList.Count;
         }
 
-        public int GetSectionInfoIdx(ulong address)
+        public int GetMappedSectionID(ulong address)
         {
-            for (int i = 0; i < mapped_section_list.Count; ++i)
+            for (int i = 0; i < MappedSectionList.Count; ++i)
             {
-                MappedSection sectionInfo = mapped_section_list[i];
+                MappedSection sectionInfo = MappedSectionList[i];
                 if (sectionInfo.Start <= address && (sectionInfo.Start + (ulong)sectionInfo.Length) >= address)
                 {
                     return i;
@@ -187,29 +185,38 @@ namespace PS4_Cheater
             return -1;
         }
 
+        public MappedSection GetMappedSection(ulong address)
+        {
+            int sectionID = GetMappedSectionID(address);
+            if (sectionID < 0)
+            {
+                return null;
+            }
+            return MappedSectionList[sectionID];
+        }
+
         public void SectionCheck(int idx, bool _checked)
         {
-            mapped_section_list[idx].Check = _checked;
-            if (mapped_section_list[idx].Check)
+            MappedSectionList[idx].Check = _checked;
+            if (MappedSectionList[idx].Check)
             {
-                TotalMemorySize += (ulong)mapped_section_list[idx].Length;
+                TotalMemorySize += (ulong)MappedSectionList[idx].Length;
             }
             else
             {
-                TotalMemorySize -= (ulong)mapped_section_list[idx].Length;
+                TotalMemorySize -= (ulong)MappedSectionList[idx].Length;
             }
         }
 
         public ProcessInfo GetProcessInfo(string process_name)
         {
-            //this.ps4.Connect();
             ProcessList processList = MemoryHelper.GetProcessList();
             ProcessInfo processInfo = null;
             foreach (Process process in processList.processes)
             {
                 if (process.name == process_name)
                 {
-                    ProcessID = process.pid;
+                    this.ProcessID = process.pid;
                     processInfo = MemoryHelper.GetProcessInfo(process.pid);
                     break;
                 }
@@ -226,7 +233,7 @@ namespace PS4_Cheater
 
         public string GetSectionName(int section_idx)
         {
-            MappedSection sectionInfo = mapped_section_list[section_idx];
+            MappedSection sectionInfo = MappedSectionList[section_idx];
 
             StringBuilder section_name = new StringBuilder();
             section_name.Append(sectionInfo.Name + "-");
@@ -239,7 +246,7 @@ namespace PS4_Cheater
 
         public void InitMemorySectionList(ProcessInfo pi)
         {
-            mapped_section_list.Clear();
+            MappedSectionList.Clear();
             TotalMemorySize = 0;
 
             for (int i = 0; i < pi.entries.Length; i++)
@@ -253,6 +260,7 @@ namespace PS4_Cheater
                     int idx = 0;
                     ulong block_length = 1024 * 1024 * 128;
 
+                    //Executable section
                     if ((entry.prot & 0x5) == 0x5)
                     {
                         block_length = length;
@@ -272,14 +280,14 @@ namespace PS4_Cheater
                             length -= cur_length;
                         }
 
-                        MappedSection section_info = new MappedSection();
-                        section_info.Start = start;
-                        section_info.Length = (int)cur_length;
-                        section_info.Name = entry.name + "[" + idx + "]";
-                        section_info.Check = false;
-                        section_info.Prot = entry.prot;
+                        MappedSection mappedSection = new MappedSection();
+                        mappedSection.Start = start;
+                        mappedSection.Length = (int)cur_length;
+                        mappedSection.Name = entry.name + "[" + idx + "]";
+                        mappedSection.Check = false;
+                        mappedSection.Prot = entry.prot;
 
-                        mapped_section_list.Add(section_info);
+                        MappedSectionList.Add(mappedSection);
 
                         start += cur_length;
                         ++idx;
@@ -292,18 +300,18 @@ namespace PS4_Cheater
         public ulong TotalAddressCount()
         {
             ulong total_address_count = 0;
-            for (int idx = 0; idx < mapped_section_list.Count; ++idx)
+            for (int idx = 0; idx < MappedSectionList.Count; ++idx)
             {
-                total_address_count += (ulong)mapped_section_list[idx].AddressList.Count;
+                total_address_count += (ulong)MappedSectionList[idx].AddressList.Count;
             }
             return total_address_count;
         }
 
         public void ClearAddressList()
         {
-            for (int idx = 0; idx < mapped_section_list.Count; ++idx)
+            for (int idx = 0; idx < MappedSectionList.Count; ++idx)
             {
-                mapped_section_list[idx].AddressList.Clear(); ;
+                MappedSectionList[idx].AddressList.Clear(); ;
             }
         }
     }

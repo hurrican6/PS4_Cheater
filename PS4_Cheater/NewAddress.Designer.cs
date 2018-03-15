@@ -73,11 +73,14 @@
             this.type_box.Items.AddRange(new object[] {
             "4 bytes",
             "2 bytes",
-            "float"});
+            "8 bytes",
+            "float",
+            "hex"});
             this.type_box.Location = new System.Drawing.Point(78, 39);
             this.type_box.Name = "type_box";
             this.type_box.Size = new System.Drawing.Size(121, 20);
             this.type_box.TabIndex = 3;
+            this.type_box.SelectedIndexChanged += new System.EventHandler(this.type_box_SelectedIndexChanged);
             // 
             // value_box
             // 

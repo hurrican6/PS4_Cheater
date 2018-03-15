@@ -90,6 +90,9 @@
     <Reference Include="Be.Windows.Forms.HexBox">
       <HintPath>.\Be.Windows.Forms.HexBox.dll</HintPath>
     </Reference>
+    <Reference Include="librpc">
+      <HintPath>.\librpc.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
@@ -104,6 +107,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CheatList.cs" />
     <Compile Include="HexEdit.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -127,6 +131,7 @@
     <Compile Include="ProcessManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PS4APIWarpper.cs" />
     <Compile Include="Util.cs" />
     <EmbeddedResource Include="HexEdit.resx">
       <DependentUpon>HexEdit.cs</DependentUpon>
@@ -164,12 +169,6 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\jkpatch\librpc\librpc.csproj">
-      <Project>{7b98cff7-287f-4672-9203-a0493e87e053}</Project>
-      <Name>librpc</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

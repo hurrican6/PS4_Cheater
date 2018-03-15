@@ -66,7 +66,7 @@ namespace PS4_Cheater
         private void HexEdit_Load(object sender, EventArgs e)
         {
             this.hexBox.LineInfoOffset = (uint)section.Start;
-            this.buffer = memoryHelper.ReadMemory(section.Start, (int)section.Length);
+            this.buffer = MemoryHelper.ReadMemory(section.Start, (int)section.Length);
             update_ui(page);
         }
 
@@ -123,7 +123,7 @@ namespace PS4_Cheater
                 for (int i = 0; i < change_list.Count; ++i)
                 {
                     byte[] b = { buffer[change_list[i]]  };
-                    memoryHelper.WriteMemory(section.Start + (ulong)(page * page_size + change_list[i]), b);
+                    MemoryHelper.WriteMemory(section.Start + (ulong)(page * page_size + change_list[i]), b);
                 }
                 mvbp.change_list.Clear();
             }

@@ -23,23 +23,31 @@ namespace PS4_Cheater
 
     public enum ValueType
     {
-        INT_TYPE,
-        SHORT_TYPE,
+        UINT_TYPE,
+        USHORT_TYPE,
+        ULONG_TYPE,
         FLOAT_TYPE,
         HEX_TYPE,
-        NONE,
+        NONE_TYPE,
+
     }
 
     public class MemoryHelper
     {
-        private PS4RPC ps4;
-        private Mutex mutex;
-        public int ProcessID;
+        public static PS4RPC ps4 = null;
+        private static Mutex mutex;
+        public static int ProcessID;
 
-        public MemoryHelper(PS4RPC ps4)
+        static MemoryHelper()
         {
             mutex = new Mutex();
-            this.ps4 = ps4;
+        }
+
+        public static bool Connect(string ip)
+        {
+            ps4 = new PS4RPC(ip);
+            ps4.Connect();
+            return false;
         }
 
         public delegate string BytesToStringHandler(Byte[] value);
@@ -48,8 +56,8 @@ namespace PS4_Cheater
         public delegate void CompareWithFilterListHandler(Byte[] match_value, ulong address, byte[] mem,
             AddressList filtered_lists);
         public delegate void SetBytesByTypeHandler(ulong address, byte[] value);
-        public delegate uint BytesToUintHandler(byte[] value);
-        public delegate byte[] UintToBytesHandler(uint value);
+        public delegate ulong BytesToUlongHandler(byte[] value);
+        public delegate byte[] UlongToBytesHandler(ulong value);
         public delegate bool CompareHandler(Byte[] match_value, Byte[] value);
 
         CompareType cur_compare_type = CompareType.UNCHANGED_VALUE;
@@ -58,15 +66,15 @@ namespace PS4_Cheater
         public SetBytesByTypeHandler SetBytesByType { get; set; }
         public BytesToStringHandler BytesToString { get; set; }
         public StringToBytesHandler StringToBytes { get; set; }
-        public BytesToUintHandler BytesToUint { get; set; }
-        public UintToBytesHandler UintToBytes { get; set; }
+        public BytesToUlongHandler BytesToUlong { get; set; }
+        public UlongToBytesHandler UlongToBytes { get; set; }
         public CompareHandler Compare { get; set; }
 
         public CompareHandler CompareInFilter { get; set; }
 
         public CompareWithFilterListHandler CompareWithFilterList { get; set; }
 
-        public byte[] ReadMemory(ulong address, int length)
+        public static byte[] ReadMemory(ulong address, int length)
         {
             mutex.WaitOne();
             byte[] buf = ps4.ReadMemory(ProcessID, address, length);
@@ -74,14 +82,14 @@ namespace PS4_Cheater
             return buf;
         }
 
-        public void WriteMemory(ulong address, byte[] data)
+        public static void WriteMemory(ulong address, byte[] data)
         {
             mutex.WaitOne();
             ps4.WriteMemory(ProcessID, address, data);
             mutex.ReleaseMutex();
         }
 
-        public ProcessList GetProcessList()
+        public static ProcessList GetProcessList()
         {
             mutex.WaitOne();
             ProcessList processList = ps4.GetProcessList();
@@ -89,7 +97,7 @@ namespace PS4_Cheater
             return processList;
         }
 
-        public ProcessInfo GetProcessInfo(int processID)
+        public static ProcessInfo GetProcessInfo(int processID)
         {
             mutex.WaitOne();
             ProcessInfo processInfo = ps4.GetProcessInfo(processID);
@@ -97,45 +105,73 @@ namespace PS4_Cheater
             return processInfo;
         }
 
-        public string PrintBytesByHex(byte[] bytes)
-        {
-            string str = string.Format("{0:X}", BitConverter.ToUInt32(bytes, 0));
-            return str.ToUpper();
-        }
-
-        string float_to_string(Byte[] value)
+        public static string float_to_string(Byte[] value)
         {
             return BitConverter.ToSingle(value, 0).ToString();
         }
-        string uint_to_string(Byte[] value)
+        public static string ulong_to_string(Byte[] value)
+        {
+            return BitConverter.ToUInt64(value, 0).ToString();
+        }
+        public static string uint_to_string(Byte[] value)
         {
             return BitConverter.ToUInt32(value, 0).ToString();
         }
-        string ushort_to_string(Byte[] value)
+        public static string ushort_to_string(Byte[] value)
         {
             return BitConverter.ToUInt32(value, 0).ToString();
         }
-        string print_bytes_hex(Byte[] value)
+        public static string bytes_to_hex_string(byte[] bytes)
         {
-            return PrintBytesByHex(value);
+            string returnStr = "";
+            if (bytes != null)
+            {
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    returnStr += bytes[i].ToString("X2");
+                }
+            }
+            return returnStr;
         }
 
-        byte[] string_to_float(string value)
+        public static byte[] string_to_float(string value)
         {
-            return BitConverter.GetBytes(float.Parse(value));
+            byte[] data = BitConverter.GetBytes(float.Parse(value));
+            byte[] ret = new byte[8];
+            Buffer.BlockCopy(data, 0, ret, 0, 4);
+            return ret;
         }
-        byte[] string_to_4_bytes(string value)
+        public static byte[] string_to_8_bytes(string value)
         {
-            return BitConverter.GetBytes(uint.Parse(value));
-        }
-        byte[] string_to_2_bytes(string value)
-        {
-            return BitConverter.GetBytes(uint.Parse(value));
+            return BitConverter.GetBytes(ulong.Parse(value));
         }
 
-        byte[] string_to_hex(string value)
+        public static byte[] string_to_4_bytes(string value)
         {
-            return BitConverter.GetBytes(ushort.Parse(value));
+            return BitConverter.GetBytes(ulong.Parse(value));
+        }
+
+        public static byte[] string_to_2_bytes(string value)
+        {
+            return BitConverter.GetBytes(ulong.Parse(value));
+        }
+
+        public static byte[] string_to_hex(string hexString)
+        {
+            hexString = hexString.Replace(" ", "");
+            if ((hexString.Length % 2) != 0)
+                hexString += "0";
+            byte[] returnBytes = new byte[hexString.Length / 2];
+            for (int i = 0; i < returnBytes.Length; i++)
+                returnBytes[i] = Convert.ToByte(hexString.Substring(i * 2, 2), 16);
+            return returnBytes;
+        }
+
+        byte[] get_bytes_8_bytes(ulong address)
+        {
+            byte[] buffer = new byte[8];
+            buffer = ReadMemory(address, 8);
+            return buffer;
         }
 
         byte[] get_bytes_4_bytes(ulong address)
@@ -144,6 +180,7 @@ namespace PS4_Cheater
             buffer = ReadMemory(address, 4);
             return buffer;
         }
+
         byte[] get_bytes_2_bytes(ulong address)
         {
             byte[] buffer = new byte[2];
@@ -151,22 +188,32 @@ namespace PS4_Cheater
             return buffer;
         }
 
-        uint bytes_to_uint_4_bytes(byte[] bytes)
+        public static ulong bytes_to_8_bytes(byte[] bytes)
+        {
+            return BitConverter.ToUInt64(bytes, 0);
+        }
+
+        public static ulong bytes_to_4_bytes(byte[] bytes)
         {
             return BitConverter.ToUInt32(bytes, 0);
         }
 
-        uint bytes_to_uint_2_bytes(byte[] bytes)
+        public static ulong bytes_to_2_bytes(byte[] bytes)
         {
             return BitConverter.ToUInt16(bytes, 0);
         }
 
-        byte[] uint_to_bytes_4_bytes(uint value)
+        public static byte[] ulong_to_8_bytes(ulong value)
         {
             return BitConverter.GetBytes(value);
         }
 
-        byte[] uint_to_bytes_2_bytes(uint value)
+        public static byte[] ulong_to_4_bytes(ulong value)
+        {
+            return BitConverter.GetBytes(value);
+        }
+
+        public static byte[] ulong_to_2_bytes(ulong value)
         {
             return BitConverter.GetBytes(value);
         }
@@ -176,69 +223,94 @@ namespace PS4_Cheater
             WriteMemory(address, value);
         }
 
+        void set_bytes_8_bytes(ulong address, byte[] value)
+        {
+            byte[] data = new byte[8];
+            Buffer.BlockCopy(value, 0, data, 0, 8);
+            WriteMemory(address, data);
+        }
+
         void set_bytes_4_bytes(ulong address, byte[] value)
         {
-            byte[] data = { value[0], value[1], value[2], value[3] };
+            byte[] data = new byte[4];
+            Buffer.BlockCopy(value, 0, data, 0, 4);
             WriteMemory(address, data);
         }
         void set_bytes_2_bytes(ulong address, byte[] value)
         {
-            byte[] data = { value[0], value[1] };
+            byte[] data = new byte[2];
+            Buffer.BlockCopy(value, 0, data, 0, 2);
             WriteMemory(address, data);
+        }
+
+        void compare_with_filter_list_8_bytes(byte[] match_value, ulong address, byte[] mem, AddressList filtered_list)
+        {
+            Byte[] bytes = new byte[8];
+            for (int i = 0; i + 8 < mem.LongLength; i += 4)
+            {
+                Buffer.BlockCopy(mem, i, bytes, 0, 8);
+                if (CompareInFilter(match_value, bytes))
+                {
+                    Address addr = new Address();
+                    addr.AddressOffset = (uint)i;
+                    addr.MemoryValue = BytesToUlong(bytes);
+                    filtered_list.Add(addr);
+                }
+            }
         }
 
         void compare_with_filter_list_4_bytes(byte[] match_value, ulong address, byte[] mem, AddressList filtered_list)
         {
-            Byte[] bytes = new byte[4];
-            for (int i = 0; i < mem.LongLength; i += 4)
+            Byte[] bytes = new byte[8];
+            for (int i = 0; i + 4 < mem.LongLength; i += 4)
             {
                 Buffer.BlockCopy(mem, i, bytes, 0, 4);
                 if (CompareInFilter(match_value, bytes))
                 {
                     Address addr = new Address();
                     addr.AddressOffset = (uint)i;
-                    addr.MemoryValue = BytesToUint(bytes);
+                    addr.MemoryValue = BytesToUlong(bytes);
                     filtered_list.Add(addr);
                 }
             }
         }
         void compare_with_filter_list_2_bytes(byte[] match_value, ulong address, byte[] mem, AddressList filtered_list)
         {
-            Byte[] bytes = new byte[4];
-            for (int i = 0; i < mem.LongLength; i += 2)
+            Byte[] bytes = new byte[8];
+            for (int i = 0; i + 2 < mem.LongLength; i += 2)
             {
                 Buffer.BlockCopy(mem, i, bytes, 0, 2);
                 if (CompareInFilter(match_value, bytes))
                 {
                     Address addr = new Address();
                     addr.AddressOffset = (uint)i;
-                    addr.MemoryValue = BytesToUint(bytes);
+                    addr.MemoryValue = BytesToUlong(bytes);
                     filtered_list.Add(addr);
                 }
             }
         }
 
-        bool scan_type_any_uint(byte[] match_value, byte[] value)
+        bool scan_type_any_ulong(byte[] match_value, byte[] value)
         {
-            return BitConverter.ToUInt32(value, 0) != 0 ? true : false;
+            return BitConverter.ToUInt64(value, 0) != 0 ? true : false;
         }
 
-        bool scan_type_bigger_uint(byte[] match_value, byte[] value)
+        bool scan_type_bigger_ulong(byte[] match_value, byte[] value)
         {
-            return BitConverter.ToUInt32(value, 0) > BitConverter.ToUInt32(match_value, 0);
+            return BitConverter.ToUInt64(value, 0) > BitConverter.ToUInt64(match_value, 0);
         }
-        bool scan_type_less_uint(byte[] match_value, byte[] value)
+        bool scan_type_less_ulong(byte[] match_value, byte[] value)
         {
-            return BitConverter.ToUInt32(value, 0) < BitConverter.ToUInt32(match_value, 0);
+            return BitConverter.ToUInt64(value, 0) < BitConverter.ToUInt64(match_value, 0);
         }
 
-        bool scan_type_equal_uint(byte[] match_value, byte[] value)
+        bool scan_type_equal_ulong(byte[] match_value, byte[] value)
         {
-            return BitConverter.ToUInt32(value, 0) == BitConverter.ToUInt32(match_value, 0);
+            return BitConverter.ToUInt64(value, 0) == BitConverter.ToUInt64(match_value, 0);
         }
-        bool scan_type_not_uint(byte[] match_value, byte[] value)
+        bool scan_type_not_ulong(byte[] match_value, byte[] value)
         {
-            return BitConverter.ToUInt32(value, 0) != BitConverter.ToUInt32(match_value, 0);
+            return BitConverter.ToUInt64(value, 0) != BitConverter.ToUInt64(match_value, 0);
         }
 
         bool scan_type_any_float(byte[] match_value, byte[] value)
@@ -258,6 +330,7 @@ namespace PS4_Cheater
             return Math.Abs(BitConverter.ToSingle(value, 0) -
                 BitConverter.ToSingle(match_value, 0)) < 0.0001;
         }
+
         bool scan_type_not_float(byte[] match_value, byte[] value)
         {
             return !scan_type_equal_float(match_value, value);
@@ -271,22 +344,25 @@ namespace PS4_Cheater
                 CompareType.INCREASED_VALUE == cur_compare_type ||
                 CompareType.DECREASED_VALUE == cur_compare_type)
             {
-                compare_value = UintToBytes(address.MemoryValue);
+                compare_value = UlongToBytes(address.MemoryValue);
             }
 
             return compare_value;
         }
 
-        public void InitMemoryHandler(string valueType, CompareType compareType)
+        public static ValueType GetValueTypeByString(string valueType)
         {
-            ValueType _valueType = ValueType.NONE;
+            ValueType _valueType = ValueType.NONE_TYPE;
             switch (valueType)
             {
+                case "8 bytes":
+                    _valueType = ValueType.ULONG_TYPE;
+                    break;
                 case "4 bytes":
-                    _valueType = ValueType.INT_TYPE;
+                    _valueType = ValueType.UINT_TYPE;
                     break;
                 case "2 bytes":
-                    _valueType = ValueType.SHORT_TYPE;
+                    _valueType = ValueType.USHORT_TYPE;
                     break;
                 case "float":
                     _valueType = ValueType.FLOAT_TYPE;
@@ -294,8 +370,34 @@ namespace PS4_Cheater
                 case "hex":
                     _valueType = ValueType.HEX_TYPE;
                     break;
+                default:
+                    throw new Exception("GetValueTypeByString!!!");
             }
+            return _valueType;
+        }
 
+        public static string GetStringOfValueType(ValueType valueType)
+        {
+            switch (valueType)
+            {
+                case ValueType.ULONG_TYPE:
+                    return "8 bytes";
+                case ValueType.UINT_TYPE:
+                    return "4 bytes";
+                case ValueType.USHORT_TYPE:
+                    return "2 bytes";
+                case ValueType.FLOAT_TYPE:
+                    return "float";
+                case ValueType.HEX_TYPE:
+                    return "hex";
+                default:
+                    throw new Exception("GetStringOfValueType!!!");
+            }
+        }
+
+        public void InitMemoryHandler(string valueType, CompareType compareType)
+        {
+            ValueType _valueType = GetValueTypeByString(valueType);
             InitMemoryHandler(_valueType, compareType);
         }
 
@@ -312,33 +414,42 @@ namespace PS4_Cheater
                     CompareWithFilterList = compare_with_filter_list_4_bytes;
                     BytesToString = float_to_string;
                     StringToBytes = string_to_float;
-                    BytesToUint = bytes_to_uint_4_bytes;
-                    UintToBytes = uint_to_bytes_4_bytes;
+                    BytesToUlong = bytes_to_4_bytes;
+                    UlongToBytes = ulong_to_4_bytes;
                     is_float = true;
                     break;
-                case ValueType.INT_TYPE:
+                case ValueType.ULONG_TYPE:
+                    SetBytesByType = set_bytes_8_bytes;
+                    GetBytesByType = get_bytes_8_bytes;
+                    CompareWithFilterList = compare_with_filter_list_8_bytes;
+                    BytesToString = ulong_to_string;
+                    StringToBytes = string_to_8_bytes;
+                    BytesToUlong = bytes_to_8_bytes;
+                    UlongToBytes = ulong_to_8_bytes;
+                    break;
+                case ValueType.UINT_TYPE:
                     SetBytesByType = set_bytes_4_bytes;
                     GetBytesByType = get_bytes_4_bytes;
                     CompareWithFilterList = compare_with_filter_list_4_bytes;
                     BytesToString = uint_to_string;
                     StringToBytes = string_to_4_bytes;
-                    BytesToUint = bytes_to_uint_4_bytes;
-                    UintToBytes = uint_to_bytes_4_bytes;
+                    BytesToUlong = bytes_to_4_bytes;
+                    UlongToBytes = ulong_to_4_bytes;
                     break;
-                case ValueType.SHORT_TYPE:
+                case ValueType.USHORT_TYPE:
                     SetBytesByType = set_bytes_2_bytes;
                     GetBytesByType = get_bytes_2_bytes;
                     CompareWithFilterList = compare_with_filter_list_2_bytes;
                     BytesToString = ushort_to_string;
                     StringToBytes = string_to_2_bytes;
-                    BytesToUint = bytes_to_uint_2_bytes;
-                    UintToBytes = uint_to_bytes_2_bytes;
+                    BytesToUlong = bytes_to_2_bytes;
+                    UlongToBytes = ulong_to_2_bytes;
                     break;
                 case ValueType.HEX_TYPE:
                     SetBytesByType = set_bytes_hex;
                     GetBytesByType = null;
                     CompareWithFilterList = null;
-                    BytesToString = print_bytes_hex;
+                    BytesToString = bytes_to_hex_string;
                     StringToBytes = string_to_2_bytes;
                     break;
                 default:
@@ -354,7 +465,7 @@ namespace PS4_Cheater
                     }
                     else
                     {
-                        Compare = scan_type_any_uint;
+                        Compare = scan_type_any_ulong;
                     }
                     CompareInFilter = Compare;
                     break;
@@ -365,7 +476,7 @@ namespace PS4_Cheater
                     }
                     else
                     {
-                        Compare = scan_type_equal_uint;
+                        Compare = scan_type_equal_ulong;
                     }
                     CompareInFilter = Compare;
                     break;
@@ -377,8 +488,8 @@ namespace PS4_Cheater
                     }
                     else
                     {
-                        Compare = scan_type_not_uint;
-                        CompareInFilter = scan_type_any_uint;
+                        Compare = scan_type_not_ulong;
+                        CompareInFilter = scan_type_any_ulong;
                     }
                     break;
                 case CompareType.UNCHANGED_VALUE:
@@ -389,8 +500,8 @@ namespace PS4_Cheater
                     }
                     else
                     {
-                        Compare = scan_type_equal_uint;
-                        CompareInFilter = scan_type_any_uint;
+                        Compare = scan_type_equal_ulong;
+                        CompareInFilter = scan_type_any_ulong;
                     }
                     break;
                 case CompareType.INCREASED_VALUE:
@@ -401,8 +512,8 @@ namespace PS4_Cheater
                     }
                     else
                     {
-                        Compare = scan_type_bigger_uint;
-                        CompareInFilter = scan_type_any_uint;
+                        Compare = scan_type_bigger_ulong;
+                        CompareInFilter = scan_type_any_ulong;
                     }
                     break;
                 case CompareType.DECREASED_VALUE:
@@ -413,8 +524,8 @@ namespace PS4_Cheater
                     }
                     else
                     {
-                        Compare = scan_type_less_uint;
-                        CompareInFilter = scan_type_any_uint;
+                        Compare = scan_type_less_ulong;
+                        CompareInFilter = scan_type_any_ulong;
                     }
                     break;
                 case CompareType.BIGGER_THAN_VALUE:
@@ -424,7 +535,7 @@ namespace PS4_Cheater
                     }
                     else
                     {
-                        Compare = scan_type_bigger_uint;
+                        Compare = scan_type_bigger_ulong;
                     }
                     CompareInFilter = Compare;
                     break;
@@ -435,7 +546,7 @@ namespace PS4_Cheater
                     }
                     else
                     {
-                        Compare = scan_type_less_uint;
+                        Compare = scan_type_less_ulong;
                     }
                     CompareInFilter = Compare;
                     break;

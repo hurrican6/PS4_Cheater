@@ -58,5 +58,15 @@ namespace PS4_Cheater
         {
             this.Close();
         }
+
+        private void type_box_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            lock_box.Enabled = true;
+            if ((string)type_box.SelectedItem == "hex")
+            {
+                lock_box.Checked = false;
+                lock_box.Enabled = false;
+            }
+        }
     }
 }

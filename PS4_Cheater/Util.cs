@@ -13,6 +13,10 @@ namespace PS4_Cheater
         public const uint SAVE_FLAG_MODIFED = 0x2;
 
         public const uint SECTION_EXECUTABLE = 0x5;
+
+        public const uint MAJOR_VERSION = 1;
+        public const uint SECONDARY_VERSION = 3;
+        public const uint THIRD_VERSION = 0;
     }
 
     class Config
@@ -33,6 +37,7 @@ namespace PS4_Cheater
             }
             return false;
         }
+
         public static string getSetting(string key)
         {
             try
@@ -58,7 +63,7 @@ namespace PS4_Cheater
             }
             catch
             {
-
+                addSetting(key, newValue);
             }
             return false;
         }
