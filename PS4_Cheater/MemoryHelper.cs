@@ -11,6 +11,7 @@ namespace PS4_Cheater
     public enum CompareType
     {
         EXACT_VALUE,
+        FUZZY_VALUE,
         INCREASED_VALUE,
         DECREASED_VALUE,
         BIGGER_THAN_VALUE,
@@ -386,6 +387,11 @@ namespace PS4_Cheater
             return Math.Abs(BitConverter.ToDouble(value, 0) -
                 BitConverter.ToDouble(match_value, 0)) < 0.0001;
         }
+        bool scan_type_fuzzy_equal_double(byte[] match_value, byte[] value)
+        {
+            return Math.Abs(BitConverter.ToDouble(value, 0) -
+                BitConverter.ToDouble(match_value, 0)) < 1;
+        }
         bool scan_type_not_double(byte[] match_value, byte[] value)
         {
             return !scan_type_equal_double(match_value, value);
@@ -407,6 +413,11 @@ namespace PS4_Cheater
         {
             return Math.Abs(BitConverter.ToSingle(value, 0) -
                 BitConverter.ToSingle(match_value, 0)) < 0.0001;
+        }
+        bool scan_type_fuzzy_equal_float(byte[] match_value, byte[] value)
+        {
+            return Math.Abs(BitConverter.ToSingle(value, 0) -
+                BitConverter.ToSingle(match_value, 0)) < 1;
         }
         bool scan_type_not_float(byte[] match_value, byte[] value)
         {
@@ -587,7 +598,22 @@ namespace PS4_Cheater
                     }
                     else if (is_double)
                     {
-                        Compare = scan_type_any_double;
+                        Compare = scan_type_equal_double;
+                    }
+                    else
+                    {
+                        Compare = scan_type_equal_ulong;
+                    }
+                    CompareInFilter = Compare;
+                    break;
+                case CompareType.FUZZY_VALUE:
+                    if (is_float)
+                    {
+                        Compare = scan_type_fuzzy_equal_float;
+                    }
+                    else if (is_double)
+                    {
+                        Compare = scan_type_fuzzy_equal_double;
                     }
                     else
                     {
