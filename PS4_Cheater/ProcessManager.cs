@@ -152,7 +152,7 @@ namespace PS4_Cheater
     public class ProcessManager
     {
         public ulong TotalMemorySize { get; set; }
-        public int ProcessID { get; set; }
+        //public int ProcessID { get; set; }
 
         public List<MappedSection> MappedSectionList { get; }
 
@@ -216,8 +216,8 @@ namespace PS4_Cheater
             {
                 if (process.name == process_name)
                 {
-                    this.ProcessID = process.pid;
                     processInfo = MemoryHelper.GetProcessInfo(process.pid);
+                    MemoryHelper.ProcessID = process.pid;
                     break;
                 }
             }

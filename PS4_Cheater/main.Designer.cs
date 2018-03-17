@@ -491,7 +491,6 @@ namespace PS4_Cheater
             this.ip_box.Size = new System.Drawing.Size(142, 21);
             this.ip_box.TabIndex = 0;
             this.ip_box.TabStop = false;
-            this.ip_box.Text = "192.168.0.109";
             this.ip_box.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // port_box
@@ -618,10 +617,12 @@ namespace PS4_Cheater
             this.valueTypeList.ForeColor = System.Drawing.Color.White;
             this.valueTypeList.FormattingEnabled = true;
             this.valueTypeList.Items.AddRange(new object[] {
-            "4 bytes",
+            "1 byte",
             "2 bytes",
+            "4 bytes",
             "8 bytes",
-            "float"});
+            "float",
+            "double"});
             this.valueTypeList.Location = new System.Drawing.Point(12, 311);
             this.valueTypeList.Name = "valueTypeList";
             this.valueTypeList.Size = new System.Drawing.Size(274, 20);

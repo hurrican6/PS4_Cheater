@@ -15,8 +15,8 @@
 
     public partial class main : Form
     {
-        private ProcessManager processManager = null;
-        private MemoryHelper memoryHelper = null;
+        private ProcessManager processManager = new ProcessManager();
+        private MemoryHelper memoryHelper = new MemoryHelper();
         private CheatList cheatList = new CheatList();
 
         private const int CHEAT_LIST_ADDRESS = 0;
@@ -43,7 +43,7 @@
 
         private void main_Load(object sender, EventArgs e)
         {
-            valueTypeList.SelectedIndex = 0;
+            valueTypeList.SelectedIndex = 2;
             compareList.SelectedIndex = 0;
 
             string version = Config.getSetting("ps4 version");
@@ -130,7 +130,7 @@
                 }
                 for (int i = 0; i < address_list.Count; i++)
                 {
-                    if (curAddressCount >= 0x10000)
+                    if (curAddressCount >= 0x1000)
                     {
                         break;
                     }
@@ -215,32 +215,6 @@
             }
         }
 
-        private void processes_comboBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                section_list_box.Items.Clear();
-                result_list_view.Items.Clear();
-                cheat_list_view.Rows.Clear();
-                cheatList.Clear();
-
-                ProcessInfo processInfo = processManager.GetProcessInfo(processes_comboBox.Text);
-                processManager.InitMemorySectionList(processInfo);
-                MemoryHelper.ProcessID = processManager.ProcessID;
-
-                section_list_box.BeginUpdate();
-                for (int i = 0; i < processManager.MappedSectionList.Count; ++i)
-                {
-                    section_list_box.Items.Add(processManager.GetSectionName(i), false);
-                }
-                section_list_box.EndUpdate();
-            }
-            catch (Exception exception)
-            {
-                MessageBox.Show(exception.Message);
-            }
-        }
-
         private void refresh_Click(object sender, EventArgs e)
         {
             try
@@ -281,15 +255,6 @@
             {
                 MessageBox.Show(exception.Message);
             }
-        }
-
-        private void send_pay_load(string IP, string payloadPath, int port)
-        {
-            Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
-            socket.Connect(new IPEndPoint(IPAddress.Parse(IP), port));
-            socket.SendFile(payloadPath);
-            socket.Close();
         }
 
         private void set_section_list_box(bool check)
@@ -536,15 +501,20 @@
         {
             try
             {
-                if (e.ColumnIndex == CHEAT_LIST_VALUE)
+                DataGridViewRow edited_row = cheat_list_view.Rows[e.RowIndex];
+                object edited_col = edited_row.Cells[e.ColumnIndex].Value;
+
+                switch (e.ColumnIndex)
                 {
-                    DataGridViewRow row = cheat_list_view.Rows[e.RowIndex];
-                    cheatList[e.RowIndex].Value = (string)row.Cells[CHEAT_LIST_VALUE].Value;
-                }
-                else if (e.ColumnIndex == CHEAT_LIST_LOCK)
-                {
-                    DataGridViewRow row = cheat_list_view.Rows[e.RowIndex];
-                    cheatList[e.RowIndex].Lock = (bool)row.Cells[CHEAT_LIST_LOCK].Value;
+                    case CHEAT_LIST_VALUE:
+                        cheatList[e.RowIndex].Value = (string)edited_col;
+                        break;
+                    case CHEAT_LIST_LOCK:
+                        cheatList[e.RowIndex].Lock = (bool)edited_col;
+                        break;
+                    case CHEAT_LIST_DESC:
+                        cheatList[e.RowIndex].Description = (string)edited_col;
+                        break;
                 }
             }
             catch (Exception exception)
@@ -631,8 +601,9 @@
                 return;
             }
 
-            cheatList.LoadFile(open_file_dialog.FileName, (string)processes_comboBox.SelectedItem, processManager);
             cheat_list_view.Rows.Clear();
+            cheatList.LoadFile(open_file_dialog.FileName, (string)processes_comboBox.SelectedItem, processManager);
+
 
             for (int i = 0; i < cheatList.Count; ++i)
             {
@@ -696,14 +667,35 @@
                 }
             }
         }
+        private void processes_comboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                section_list_box.Items.Clear();
+                result_list_view.Items.Clear();
+
+                ProcessInfo processInfo = processManager.GetProcessInfo(processes_comboBox.Text);
+                processManager.InitMemorySectionList(processInfo);
+
+                section_list_box.BeginUpdate();
+                for (int i = 0; i < processManager.MappedSectionList.Count; ++i)
+                {
+                    section_list_box.Items.Add(processManager.GetSectionName(i), false);
+                }
+                section_list_box.EndUpdate();
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message);
+            }
+        }
 
         private void get_processes_btn_Click(object sender, EventArgs e)
         {
             try
             {
                 MemoryHelper.Connect(ip_box.Text);
-                processManager = new ProcessManager();
-                memoryHelper = new MemoryHelper();
+
                 this.processes_comboBox.Items.Clear();
                 ProcessList pl = MemoryHelper.GetProcessList();
                 foreach (Process process in pl.processes)
@@ -716,6 +708,15 @@
             {
                 MessageBox.Show(exception.Message, exception.Source, MessageBoxButtons.OK, MessageBoxIcon.Hand);
             }
+        }
+
+        private void send_pay_load(string IP, string payloadPath, int port)
+        {
+            Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            socket.Connect(new IPEndPoint(IPAddress.Parse(IP), port));
+            socket.SendFile(payloadPath);
+            socket.Close();
         }
 
         private void send_payload_btn_Click(object sender, EventArgs e)

@@ -23,10 +23,12 @@ namespace PS4_Cheater
 
     public enum ValueType
     {
-        UINT_TYPE,
+        BYTE_TYPE,
         USHORT_TYPE,
+        UINT_TYPE,
         ULONG_TYPE,
         FLOAT_TYPE,
+        DOUBLE_TYPE,
         HEX_TYPE,
         NONE_TYPE,
 
@@ -104,7 +106,10 @@ namespace PS4_Cheater
             mutex.ReleaseMutex();
             return processInfo;
         }
-
+        public static string double_to_string(Byte[] value)
+        {
+            return BitConverter.ToDouble(value, 0).ToString();
+        }
         public static string float_to_string(Byte[] value)
         {
             return BitConverter.ToSingle(value, 0).ToString();
@@ -119,7 +124,11 @@ namespace PS4_Cheater
         }
         public static string ushort_to_string(Byte[] value)
         {
-            return BitConverter.ToUInt32(value, 0).ToString();
+            return BitConverter.ToUInt16(value, 0).ToString();
+        }
+        public static string uchar_to_string(Byte[] value)
+        {
+            return value[0].ToString();
         }
         public static string bytes_to_hex_string(byte[] bytes)
         {
@@ -134,6 +143,13 @@ namespace PS4_Cheater
             return returnStr;
         }
 
+        public static byte[] string_to_double(string value)
+        {
+            byte[] data = BitConverter.GetBytes(double.Parse(value));
+            byte[] ret = new byte[8];
+            Buffer.BlockCopy(data, 0, ret, 0, 8);
+            return ret;
+        }
         public static byte[] string_to_float(string value)
         {
             byte[] data = BitConverter.GetBytes(float.Parse(value));
@@ -155,7 +171,10 @@ namespace PS4_Cheater
         {
             return BitConverter.GetBytes(ulong.Parse(value));
         }
-
+        public static byte[] string_to_1_byte(string value)
+        {
+            return BitConverter.GetBytes(ulong.Parse(value));
+        }
         public static byte[] string_to_hex(string hexString)
         {
             hexString = hexString.Replace(" ", "");
@@ -187,6 +206,12 @@ namespace PS4_Cheater
             buffer = ReadMemory(address, 2);
             return buffer;
         }
+        byte[] get_bytes_1_byte(ulong address)
+        {
+            byte[] buffer = new byte[1];
+            buffer = ReadMemory(address, 1);
+            return buffer;
+        }
 
         public static ulong bytes_to_8_bytes(byte[] bytes)
         {
@@ -203,6 +228,11 @@ namespace PS4_Cheater
             return BitConverter.ToUInt16(bytes, 0);
         }
 
+        public static ulong bytes_to_1_byte(byte[] bytes)
+        {
+            return bytes[0];
+        }
+
         public static byte[] ulong_to_8_bytes(ulong value)
         {
             return BitConverter.GetBytes(value);
@@ -214,6 +244,10 @@ namespace PS4_Cheater
         }
 
         public static byte[] ulong_to_2_bytes(ulong value)
+        {
+            return BitConverter.GetBytes(value);
+        }
+        public static byte[] ulong_to_1_byte(ulong value)
         {
             return BitConverter.GetBytes(value);
         }
@@ -240,6 +274,12 @@ namespace PS4_Cheater
         {
             byte[] data = new byte[2];
             Buffer.BlockCopy(value, 0, data, 0, 2);
+            WriteMemory(address, data);
+        }
+        void set_bytes_1_byte(ulong address, byte[] value)
+        {
+            byte[] data = new byte[1];
+            Buffer.BlockCopy(value, 0, data, 0, 1);
             WriteMemory(address, data);
         }
 
@@ -290,6 +330,22 @@ namespace PS4_Cheater
             }
         }
 
+        void compare_with_filter_list_1_byte(byte[] match_value, ulong address, byte[] mem, AddressList filtered_list)
+        {
+            Byte[] bytes = new byte[8];
+            for (int i = 0; i + 1 < mem.LongLength; i += 1)
+            {
+                Buffer.BlockCopy(mem, i, bytes, 0, 1);
+                if (CompareInFilter(match_value, bytes))
+                {
+                    Address addr = new Address();
+                    addr.AddressOffset = (uint)i;
+                    addr.MemoryValue = BytesToUlong(bytes);
+                    filtered_list.Add(addr);
+                }
+            }
+        }
+
         bool scan_type_any_ulong(byte[] match_value, byte[] value)
         {
             return BitConverter.ToUInt64(value, 0) != 0 ? true : false;
@@ -313,6 +369,28 @@ namespace PS4_Cheater
             return BitConverter.ToUInt64(value, 0) != BitConverter.ToUInt64(match_value, 0);
         }
 
+        bool scan_type_any_double(byte[] match_value, byte[] value)
+        {
+            return BitConverter.ToDouble(value, 0) != 0 ? true : false;
+        }
+        bool scan_type_bigger_double(byte[] match_value, byte[] value)
+        {
+            return BitConverter.ToDouble(value, 0) > BitConverter.ToSingle(match_value, 0);
+        }
+        bool scan_type_less_double(byte[] match_value, byte[] value)
+        {
+            return BitConverter.ToDouble(value, 0) < BitConverter.ToSingle(match_value, 0);
+        }
+        bool scan_type_equal_double(byte[] match_value, byte[] value)
+        {
+            return Math.Abs(BitConverter.ToDouble(value, 0) -
+                BitConverter.ToDouble(match_value, 0)) < 0.0001;
+        }
+        bool scan_type_not_double(byte[] match_value, byte[] value)
+        {
+            return !scan_type_equal_double(match_value, value);
+        }
+
         bool scan_type_any_float(byte[] match_value, byte[] value)
         {
             return BitConverter.ToSingle(value, 0) != 0 ? true : false;
@@ -330,7 +408,6 @@ namespace PS4_Cheater
             return Math.Abs(BitConverter.ToSingle(value, 0) -
                 BitConverter.ToSingle(match_value, 0)) < 0.0001;
         }
-
         bool scan_type_not_float(byte[] match_value, byte[] value)
         {
             return !scan_type_equal_float(match_value, value);
@@ -364,6 +441,12 @@ namespace PS4_Cheater
                 case "2 bytes":
                     _valueType = ValueType.USHORT_TYPE;
                     break;
+                case "1 byte":
+                    _valueType = ValueType.BYTE_TYPE;
+                    break;
+                case "double":
+                    _valueType = ValueType.DOUBLE_TYPE;
+                    break;
                 case "float":
                     _valueType = ValueType.FLOAT_TYPE;
                     break;
@@ -386,6 +469,10 @@ namespace PS4_Cheater
                     return "4 bytes";
                 case ValueType.USHORT_TYPE:
                     return "2 bytes";
+                case ValueType.BYTE_TYPE:
+                    return "1 byte";
+                case ValueType.DOUBLE_TYPE:
+                    return "double";
                 case ValueType.FLOAT_TYPE:
                     return "float";
                 case ValueType.HEX_TYPE:
@@ -404,10 +491,21 @@ namespace PS4_Cheater
         public void InitMemoryHandler(ValueType valueType, CompareType compareType)
         {
             bool is_float = false;
+            bool is_double = false;
             cur_compare_type = compareType;
 
             switch (valueType)
             {
+                case ValueType.DOUBLE_TYPE:
+                    SetBytesByType = set_bytes_8_bytes;
+                    GetBytesByType = get_bytes_8_bytes;
+                    CompareWithFilterList = compare_with_filter_list_8_bytes;
+                    BytesToString = double_to_string;
+                    StringToBytes = string_to_double;
+                    BytesToUlong = bytes_to_8_bytes;
+                    UlongToBytes = ulong_to_8_bytes;
+                    is_double = true;
+                    break;
                 case ValueType.FLOAT_TYPE:
                     SetBytesByType = set_bytes_4_bytes;
                     GetBytesByType = get_bytes_4_bytes;
@@ -445,6 +543,15 @@ namespace PS4_Cheater
                     BytesToUlong = bytes_to_2_bytes;
                     UlongToBytes = ulong_to_2_bytes;
                     break;
+                case ValueType.BYTE_TYPE:
+                    SetBytesByType = set_bytes_1_byte;
+                    GetBytesByType = get_bytes_1_byte;
+                    CompareWithFilterList = compare_with_filter_list_1_byte;
+                    BytesToString = uchar_to_string;
+                    StringToBytes = string_to_1_byte;
+                    BytesToUlong = bytes_to_1_byte;
+                    UlongToBytes = ulong_to_1_byte;
+                    break;
                 case ValueType.HEX_TYPE:
                     SetBytesByType = set_bytes_hex;
                     GetBytesByType = null;
@@ -463,6 +570,10 @@ namespace PS4_Cheater
                     {
                         Compare = scan_type_any_float;
                     }
+                    else if (is_double)
+                    {
+                        Compare = scan_type_any_double;
+                    }
                     else
                     {
                         Compare = scan_type_any_ulong;
@@ -473,6 +584,10 @@ namespace PS4_Cheater
                     if (is_float)
                     {
                         Compare = scan_type_equal_float;
+                    }
+                    else if (is_double)
+                    {
+                        Compare = scan_type_any_double;
                     }
                     else
                     {
@@ -486,6 +601,11 @@ namespace PS4_Cheater
                         Compare = scan_type_not_float;
                         CompareInFilter = scan_type_any_float;
                     }
+                    else if (is_double)
+                    {
+                        Compare = scan_type_not_double;
+                        CompareInFilter = scan_type_any_double;
+                    }
                     else
                     {
                         Compare = scan_type_not_ulong;
@@ -497,6 +617,11 @@ namespace PS4_Cheater
                     {
                         Compare = scan_type_equal_float;
                         CompareInFilter = scan_type_any_float;
+                    }
+                    else if (is_double)
+                    {
+                        Compare = scan_type_equal_double;
+                        CompareInFilter = scan_type_any_double;
                     }
                     else
                     {
@@ -510,6 +635,11 @@ namespace PS4_Cheater
                         Compare = scan_type_bigger_float;
                         CompareInFilter = scan_type_any_float;
                     }
+                    else if (is_double)
+                    {
+                        Compare = scan_type_bigger_double;
+                        CompareInFilter = scan_type_any_double;
+                    }
                     else
                     {
                         Compare = scan_type_bigger_ulong;
@@ -522,6 +652,11 @@ namespace PS4_Cheater
                         Compare = scan_type_less_float;
                         CompareInFilter = scan_type_any_float;
                     }
+                    else if (is_double)
+                    {
+                        Compare = scan_type_less_double;
+                        CompareInFilter = scan_type_any_double;
+                    }
                     else
                     {
                         Compare = scan_type_less_ulong;
@@ -533,6 +668,10 @@ namespace PS4_Cheater
                     {
                         Compare = scan_type_bigger_float;
                     }
+                    else if (is_double)
+                    {
+                        Compare = scan_type_bigger_double;
+                    }
                     else
                     {
                         Compare = scan_type_bigger_ulong;
@@ -543,6 +682,10 @@ namespace PS4_Cheater
                     if (is_float)
                     {
                         Compare = scan_type_less_float;
+                    }
+                    else if (is_double)
+                    {
+                        Compare = scan_type_less_double;
                     }
                     else
                     {

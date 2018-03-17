@@ -71,10 +71,12 @@
             this.type_box.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.type_box.FormattingEnabled = true;
             this.type_box.Items.AddRange(new object[] {
-            "4 bytes",
+            "1 byte",
             "2 bytes",
+            "4 bytes",
             "8 bytes",
             "float",
+            "double",
             "hex"});
             this.type_box.Location = new System.Drawing.Point(78, 39);
             this.type_box.Name = "type_box";

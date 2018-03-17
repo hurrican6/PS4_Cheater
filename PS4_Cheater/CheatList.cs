@@ -47,13 +47,17 @@ namespace PS4_Cheater
         {
             switch (Type)
             {
-                case ValueType.UINT_TYPE:
+                case ValueType.BYTE_TYPE:
                 case ValueType.USHORT_TYPE:
+                case ValueType.UINT_TYPE:
                 case ValueType.ULONG_TYPE:
                 case ValueType.FLOAT_TYPE:
+                case ValueType.DOUBLE_TYPE:
                     return CheatType.DATA_TYPE;
                 case ValueType.HEX_TYPE:
                     return CheatType.HEX_TYPE;
+                default:
+                    throw new ArgumentException("Unkown value type.");
             }
             return CheatType.NONE_TYPE;
         }

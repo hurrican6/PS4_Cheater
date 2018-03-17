@@ -51,7 +51,7 @@ namespace PS4_Cheater
 
         private void NewAddress_Load(object sender, EventArgs e)
         {
-            type_box.SelectedIndex = 0;
+            type_box.SelectedIndex = 2;
         }
 
         private void cancell_btn_Click(object sender, EventArgs e)
