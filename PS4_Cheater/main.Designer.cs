@@ -256,6 +256,7 @@ namespace PS4_Cheater
             this.cheat_list_view.RowTemplate.Height = 23;
             this.cheat_list_view.Size = new System.Drawing.Size(703, 255);
             this.cheat_list_view.TabIndex = 1;
+            this.cheat_list_view.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.cheat_list_view_CellClick);
             this.cheat_list_view.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.cheat_list_view_CellEndEdit);
             this.cheat_list_view.RowsRemoved += new System.Windows.Forms.DataGridViewRowsRemovedEventHandler(this.cheat_list_view_RowsRemoved);
             // 
