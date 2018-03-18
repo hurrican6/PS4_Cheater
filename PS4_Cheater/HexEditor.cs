@@ -14,41 +14,39 @@ using librpc;
 
 namespace PS4_Cheater
 {
-    public partial class HexEdit : Form
+    public partial class HexEditor : Form
     {
-        public byte[] buffer { get; set; }
-        public bool changed { get; set; }
-
         private MappedSection section;
         private MemoryHelper memoryHelper;
 
         private int page;
         private int page_count;
-        private int offset;
+        private long line;
 
         const int page_size = 8 * 1024 * 1024;
 
-        public HexEdit(MemoryHelper memoryHelper, int offset, MappedSection section)
+        public HexEditor(MemoryHelper memoryHelper, int offset, MappedSection section)
         {
             InitializeComponent();
 
             this.memoryHelper = memoryHelper;
             this.section = section;
-            this.changed = false;
-            this.offset = offset;
             this.page = offset / page_size;
+            this.line = (offset - page * page_size) / hexBox.BytesPerLine;
 
             this.page_count = divup((int)section.Length, page_size);
 
             for (int i = 0; i < page_count; ++i)
             {
-                page_list.Items.Add((i + 1).ToString());
+                ulong start = section.Start + (ulong)i * page_size;
+                ulong end = section.Start + (ulong)(i + 1) * page_size;
+                page_list.Items.Add((i + 1).ToString() + String.Format(" {0:X}-{1:X}", start, end));
             }
         }
 
-        private void update_ui(int page)
+        private void update_ui(int page, long line)
         {
-            this.hexBox.LineInfoOffset = (uint)((ulong)section.Start + (ulong)(page_size * page));
+            hexBox.LineInfoOffset = (uint)((ulong)section.Start + (ulong)(page_size * page));
 
             int mem_size = page_size;
 
@@ -57,17 +55,21 @@ namespace PS4_Cheater
                 mem_size = section.Length - page_size * page;
             }
 
-            msg.Text = "page:" + (page + 1) + "/" + page_count;
-            byte[] dst = new byte[mem_size];
-            Buffer.BlockCopy(buffer, page * page_size, dst, 0, mem_size);
+            byte[] dst = MemoryHelper.ReadMemory(section.Start + (ulong)page * page_size, (int)mem_size);
             hexBox.ByteProvider = new MemoryViewByteProvider(dst);
+
+            if (line != 0)
+            {
+                hexBox.SelectionStart = line * hexBox.BytesPerLine;
+                hexBox.SelectionLength = 0;
+                hexBox.Focus();
+                //hexBox.ScrollToCaret();
+            }
         }
 
         private void HexEdit_Load(object sender, EventArgs e)
         {
-            this.hexBox.LineInfoOffset = (uint)section.Start;
-            this.buffer = MemoryHelper.ReadMemory(section.Start, (int)section.Length);
-            update_ui(page);
+            page_list.SelectedIndex = page;
         }
 
         private void HexEdit_FormClosing(object sender, FormClosingEventArgs e)
@@ -88,8 +90,9 @@ namespace PS4_Cheater
             }
 
             page++;
+            line = 0;
 
-            update_ui(page);
+            page_list.SelectedIndex = page;
         }
 
         private void previous_btn_Click(object sender, EventArgs e)
@@ -100,15 +103,15 @@ namespace PS4_Cheater
             }
 
             page--;
-
-            update_ui(page);
+            line = 0;
+            page_list.SelectedIndex = page;
         }
 
         private void page_list_SelectedIndexChanged(object sender, EventArgs e)
         {
             page = page_list.SelectedIndex;
 
-            update_ui(page);
+            update_ui(page, line);
         }
 
         private void commit_btn_Click(object sender, EventArgs e)
@@ -127,6 +130,13 @@ namespace PS4_Cheater
                 }
                 mvbp.change_list.Clear();
             }
+        }
+
+        private void refresh_btn_Click(object sender, EventArgs e)
+        {
+            page_list.SelectedIndex = page;
+            line = hexBox.CurrentLine - 1;
+            update_ui(page, line);
         }
     }
 }

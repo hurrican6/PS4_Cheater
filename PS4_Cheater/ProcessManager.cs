@@ -7,86 +7,193 @@ using System.Text;
 using librpc;
 
 namespace PS4_Cheater
-{
-    [StructLayoutAttribute(LayoutKind.Sequential, Pack = 1)]
-    public struct Address
-    {
-        public uint AddressOffset;
-
-        public ulong MemoryValue;
-    }
+{ 
 
     public class AddressList
     {
-        private List<Address> address_list = new List<Address>();
+        private const int block_size = 4096 * 16;
+        private List<byte[]> block_list = new List<byte[]>();
 
-        public void Add(Address address)
+        private int block_tag_offset = 0;
+        private int block_tag_elem_count = 0;
+        private int block_id = 0;
+
+        private int count = 0;
+        private int iterator = 0;
+        private int element_size = 0;
+        private int element_alignment = 1;
+
+        private const int OFFSET_SIZE = 4;
+        private const int BIT_MAP_SIZE = 8;
+
+        public AddressList(int element_size, int element_alignment)
         {
-            address_list.Add(address);
+            block_list.Add(new byte[block_size]);
+            this.element_size = element_size;
+            this.element_alignment = element_alignment;
+        }
+
+        private int bit_count(ulong data, int end)
+        {
+            int sum = 0;
+            for (int i = 0; i <= end; ++i)
+            {
+                if ((data & (1ul << i)) != 0)
+                {
+                    ++sum;
+                }
+            }
+            return sum;
+        }
+
+        private int bit_position(ulong data, int pos)
+        {
+            int sum = 0;
+            for (int i = 0; i <= 64; ++i)
+            {
+                if ((data & (1ul << i)) != 0)
+                {
+                    if (sum == pos)
+                    {
+                        return i;
+                    }
+                    ++sum;
+                }
+            }
+            return -1;
+        }
+
+        public void Add(uint memoryAddress, byte[] memoryValue)
+        {
+            int o_block_id = block_id;
+            int o_block_tag_offset = block_tag_offset;
+            int o_block_tag_elem_count = block_tag_elem_count;
+
+            if (memoryValue.Length != element_size)
+            {
+                throw new Exception("Invalid address!");
+            }
+
+            byte[] dense_buffer = block_list[block_id];
+            uint address = memoryAddress;
+            
+            uint tag_address_offset_base = BitConverter.ToUInt32(dense_buffer, block_tag_offset);
+            ulong bit_map = BitConverter.ToUInt64(dense_buffer, block_tag_offset + OFFSET_SIZE);
+
+            if (tag_address_offset_base > address)
+            {
+                throw new Exception("Invalid address!");
+            }
+
+            if (bit_map == 0)
+            {
+                tag_address_offset_base = address;
+                Buffer.BlockCopy(BitConverter.GetBytes(address), 0, dense_buffer, block_tag_offset, OFFSET_SIZE);
+            }
+
+            int offset_in_bit_map = (int)(address - tag_address_offset_base) / element_alignment;
+            if (offset_in_bit_map < 64)
+            {
+                dense_buffer[block_tag_offset + OFFSET_SIZE + offset_in_bit_map / 8] |= (byte)(1 << (offset_in_bit_map % 8)); //bit map
+                Buffer.BlockCopy(memoryValue, 0, dense_buffer, block_tag_offset + OFFSET_SIZE + BIT_MAP_SIZE + element_size * block_tag_elem_count, element_size);//value
+                ++block_tag_elem_count;
+            }
+            else
+            {
+                block_tag_offset += OFFSET_SIZE + BIT_MAP_SIZE + element_size * block_tag_elem_count;
+
+                if (block_tag_offset + OFFSET_SIZE + BIT_MAP_SIZE + element_size * 64 >= block_size)
+                {
+                    block_list.Add(new byte[block_size]);
+                    ++block_id;
+                    block_tag_offset = 0;
+                    block_tag_elem_count = 0;
+                    dense_buffer = block_list[block_id];
+                }
+
+                dense_buffer[block_tag_offset + OFFSET_SIZE] = (byte)1; //bit map
+                Buffer.BlockCopy(BitConverter.GetBytes(address), 0, dense_buffer, block_tag_offset, OFFSET_SIZE); //tag address base
+                Buffer.BlockCopy(memoryValue, 0, dense_buffer, block_tag_offset + OFFSET_SIZE + BIT_MAP_SIZE, element_size); //value
+                block_tag_elem_count = 1;
+            }
+            count++;
         }
 
         public void Clear()
         {
-            address_list.Clear();
+            count = 0;
+            block_tag_offset = 0;
+            block_tag_elem_count = 0;
+            block_id = 0;
+            block_list.Clear();
+            block_list.Add(new byte[block_size]);
         }
 
-        public void RemoveAt(int idx)
+        public void Get(ref uint addressOffset, ref byte[] memoryValue)
         {
-            address_list.RemoveAt(idx);
+
+            byte[] dense_buffer = block_list[block_id];
+            memoryValue = new byte[element_size];
+
+            uint offset_base = BitConverter.ToUInt32(dense_buffer, block_tag_offset);
+            ulong bit_map = BitConverter.ToUInt64(dense_buffer, block_tag_offset + OFFSET_SIZE);
+            addressOffset = (uint)(bit_position(bit_map, block_tag_elem_count) * element_alignment) + offset_base;
+            Buffer.BlockCopy(dense_buffer, block_tag_offset + OFFSET_SIZE + BIT_MAP_SIZE + element_size * block_tag_elem_count, memoryValue, 0, element_size);
+            
         }
 
-        public Address this[int index]
+        public void Set(byte[] memoryValue)
         {
-            get
-            {
-                return address_list[index];
-            }
-            set
-            {
-                address_list[index] = value;
-            }
+            byte[] dense_buffer = block_list[block_id];
+            Buffer.BlockCopy(memoryValue, 0, dense_buffer, block_tag_offset + OFFSET_SIZE + BIT_MAP_SIZE + element_size * block_tag_elem_count, element_size);
         }
 
-        public AddressList Intersect(MemoryHelper memoryHelper, AddressList filteredList, string default_compare_value)
+        public void Begin()
         {
+            iterator = 0;
+            block_tag_offset = 0;
+            block_tag_elem_count = 0;
+            block_id = 0;
+        }
 
-            AddressList new_address_list = new AddressList();
-            int idx_i = 0;
-            int idx_j = 0;
+        private int o_tag_offset = 0;
+        private int o_tag_count = 0;
+        private int o_bit_count = 0;
 
-            while (idx_i < address_list.Count && idx_j < filteredList.Count)
+        public void Next()
+        {
+            ++iterator;
+
+            byte[] dense_buffer = block_list[block_id];
+            uint base_offset = BitConverter.ToUInt32(dense_buffer, block_tag_offset);
+            ulong bit_map = BitConverter.ToUInt64(dense_buffer, block_tag_offset + 4);
+            o_tag_offset = block_tag_offset;
+            o_tag_count = block_tag_elem_count;
+            o_bit_count = bit_count(bit_map, 63);
+            ++block_tag_elem_count;
+
+            if (bit_count(bit_map, 63) <= block_tag_elem_count)
             {
-                Address address = address_list[idx_i];
-                Address filtered = filteredList[idx_j];
-
-                if (address.AddressOffset == filtered.AddressOffset)
+                block_tag_offset += OFFSET_SIZE + BIT_MAP_SIZE + element_size * block_tag_elem_count;
+                if (block_tag_offset + OFFSET_SIZE + BIT_MAP_SIZE + element_size * 64 >= block_size)
                 {
-                    byte[] value = memoryHelper.UlongToBytes(filtered.MemoryValue);
-
-                    byte[] compare_value = memoryHelper.GetCompareBytes(address, default_compare_value);
-
-                    if (memoryHelper.Compare(compare_value, value))
-                    {
-                        new_address_list.Add(filtered);
-                    }
-
-                    idx_j++;
-                    idx_i++;
-                }
-                else if (address.AddressOffset > filtered.AddressOffset)
-                {
-                    idx_j++;
+                    ++block_id;
+                    block_tag_offset = 0;
+                    block_tag_elem_count = 0;
                 }
                 else
                 {
-                    idx_i++;
+                    block_tag_elem_count = 0;
                 }
             }
-
-            return new_address_list;
         }
-        
-        public int Count { get { return address_list.Count; } }
+
+        public bool End()
+        {
+            return (iterator == count);
+        }
+
+        public int Count { get { return count; } }
     }
 
     public class MappedSection
@@ -101,19 +208,19 @@ namespace PS4_Cheater
 
         public MappedSection()
         {
-            AddressList = new AddressList();
+            AddressList = null;
         }
 
-        public AddressList getFilteredAddressList(ProcessManager processManager, MemoryHelper memoryHelper,
-            string value, BackgroundWorker worker, ref ulong percent_len, int start, float percent)
+        public void UpdateAddressList(ProcessManager processManager, MemoryHelper memoryHelper,
+            string default_value_0_str, string default_value_1_str, bool newScan)
         {
-            AddressList filtered_list = new AddressList();
-            worker.ReportProgress(start);
-
             if (!Check)
             {
-                return filtered_list;
+                AddressList = null;
+                return;
             }
+
+            AddressList new_address_list = new AddressList(memoryHelper.Length, memoryHelper.Alignment);
 
             ulong address = this.Start;
             int length = this.Length;
@@ -134,25 +241,28 @@ namespace PS4_Cheater
                     length -= cur_length;
                 }
 
-                percent_len += (ulong)cur_length;
-                worker.ReportProgress(start + (int)(((float)percent_len / processManager.TotalMemorySize) * 100 * percent));
-
                 byte[] buffer = MemoryHelper.ReadMemory(address, (int)cur_length);
 
-                byte[] match_value = memoryHelper.StringToBytes(value);
+                byte[] default_value_0 = memoryHelper.StringToBytes(default_value_0_str);
+                byte[] default_value_1 = memoryHelper.StringToBytes(default_value_1_str);
 
-                memoryHelper.CompareWithFilterList(match_value, address, buffer, filtered_list);
-
+                if (newScan)
+                {
+                    memoryHelper.CompareWithMemoryBufferNewScanner(default_value_0, default_value_1, buffer, AddressList, new_address_list);
+                }
+                else
+                {
+                    memoryHelper.CompareWithMemoryBufferNextScanner(default_value_0, default_value_1, buffer, AddressList, new_address_list);
+                }
                 address += (ulong)cur_length;
             }
-            return filtered_list;
+            AddressList = new_address_list;
         }
     }
 
     public class ProcessManager
     {
         public ulong TotalMemorySize { get; set; }
-        //public int ProcessID { get; set; }
 
         public List<MappedSection> MappedSectionList { get; }
 
@@ -302,7 +412,10 @@ namespace PS4_Cheater
             ulong total_address_count = 0;
             for (int idx = 0; idx < MappedSectionList.Count; ++idx)
             {
-                total_address_count += (ulong)MappedSectionList[idx].AddressList.Count;
+                if (MappedSectionList[idx].Check)
+                {
+                    total_address_count += (ulong)MappedSectionList[idx].AddressList.Count;
+                }
             }
             return total_address_count;
         }
@@ -311,7 +424,10 @@ namespace PS4_Cheater
         {
             for (int idx = 0; idx < MappedSectionList.Count; ++idx)
             {
-                MappedSectionList[idx].AddressList.Clear(); ;
+                if (MappedSectionList[idx].AddressList != null)
+                {
+                    MappedSectionList[idx].AddressList.Clear();
+                }
             }
         }
     }

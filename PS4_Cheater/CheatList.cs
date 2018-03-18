@@ -59,7 +59,6 @@ namespace PS4_Cheater
                 default:
                     throw new ArgumentException("Unkown value type.");
             }
-            return CheatType.NONE_TYPE;
         }
 
         public virtual void Refresh()
@@ -97,7 +96,7 @@ namespace PS4_Cheater
             set {
                 value_ = value;
                 MemoryHelper memoryHelper = new MemoryHelper();
-                memoryHelper.InitMemoryHandler(Type, CompareType.NONE);
+                memoryHelper.InitMemoryHandler(Type, CompareType.NONE, false);
                 memoryHelper.SetBytesByType(ulong.Parse(Address, NumberStyles.HexNumber), memoryHelper.StringToBytes(value_));
             }
         }
@@ -151,7 +150,7 @@ namespace PS4_Cheater
 
             Description = elements[CHEAT_CODE_DATA_TYPE_DESCRIPTION];
 
-            Value = elements[CHEAT_CODE_DATA_TYPE_VALUE];
+            value_ = elements[CHEAT_CODE_DATA_TYPE_VALUE];
 
             return true;
         }
@@ -174,7 +173,7 @@ namespace PS4_Cheater
         public override void Refresh()
         {
             MemoryHelper memoryHelper = new MemoryHelper();
-            memoryHelper.InitMemoryHandler(Type, CompareType.NONE);
+            memoryHelper.InitMemoryHandler(Type, CompareType.NONE, false);
 
             memoryHelper.SetBytesByType(ulong.Parse(Address, NumberStyles.HexNumber), memoryHelper.StringToBytes(value_));
             value_ = memoryHelper.BytesToString(memoryHelper.GetBytesByType(ulong.Parse(Address, NumberStyles.HexNumber)));
@@ -246,7 +245,7 @@ namespace PS4_Cheater
                 processManager.MappedSectionList[sectionID].Start).ToString("X2");
 
             Type = MemoryHelper.GetValueTypeByString(elements[CHEAT_CODE_HEX_TYPE_VALUE_TYPE]);
-            Value = elements[CHEAT_CODE_HEX_TYPE_VALUE];
+            value_ = elements[CHEAT_CODE_HEX_TYPE_VALUE];
 
             ulong flag = ulong.Parse(elements[CHEAT_CODE_HEX_TYPE_FLAG], NumberStyles.HexNumber);
 

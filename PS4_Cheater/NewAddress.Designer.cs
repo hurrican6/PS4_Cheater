@@ -71,7 +71,7 @@
             this.type_box.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.type_box.FormattingEnabled = true;
             this.type_box.Items.AddRange(new object[] {
-            "1 byte",
+            "byte",
             "2 bytes",
             "4 bytes",
             "8 bytes",
