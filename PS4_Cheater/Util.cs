@@ -6,7 +6,7 @@ using System.Windows.Forms;
 using System.Configuration;
 namespace PS4_Cheater
 {
-    struct CONSTANT
+    class CONSTANT
     {
         public const uint SAVE_FLAG_NONE = 0x0;
         public const uint SAVE_FLAG_LOCK = 0x1;
@@ -16,8 +16,49 @@ namespace PS4_Cheater
 
         public const uint MAJOR_VERSION = 1;
         public const uint SECONDARY_VERSION = 3;
-        public const uint THIRD_VERSION = 1;
+        public const uint THIRD_VERSION = 2;
+
+        public const string EXACT_VALUE = "Exact Value";
+        public const string FUZZY_VALUE = "Fuzzy Value";
+        public const string INCREASED_VALUE = "Increased Value";
+        public const string INCREASED_VALUE_BY = "Increased Value By";
+        public const string DECREASED_VALUE = "Decreased Value";
+        public const string DECREASED_VALUE_BY = "Decreased Value By";
+        public const string BIGGER_THAN = "Bigger Than";
+        public const string SMALLER_THAN = "Smaller Than";
+        public const string CHANGED_VALUE = "Changed Value";
+        public const string UNCHANGED_VALUE = "Unchanged Value";
+        public const string BETWEEN_VALUE = "Between Value";
+        public const string UNKNOWN_INITIAL_VALUE = "Unknown Initial Value";
+
+        public const string BYTE_TYPE = "byte";
+        public const string BYTE_1_TYPE = "1 byte";
+        public const string BYTE_2_TYPE = "2 bytes";
+        public const string BYTE_4_TYPE = "4 bytes";
+        public const string BYTE_8_TYPE = "8 bytes";
+        public const string BYTE_FLOAT_TYPE = "float";
+        public const string BYTE_DOUBLE_TYPE = "double";
+        public const string BYTE_STRING_TYPE = "string";
+        public const string BYTE_HEX_TYPE = "hex";
+
+        public static string[] SEARCH_VALUE_TYPE = new string[]
+        {
+             CONSTANT.BYTE_TYPE,
+             CONSTANT.BYTE_2_TYPE,
+             CONSTANT.BYTE_4_TYPE,
+             CONSTANT.BYTE_8_TYPE,
+             CONSTANT.BYTE_FLOAT_TYPE,
+             CONSTANT.BYTE_DOUBLE_TYPE,
+             CONSTANT.BYTE_STRING_TYPE,
+             CONSTANT.BYTE_HEX_TYPE,
+        };
     }
+
+    class Util
+    {
+
+    }
+
 
     class Config
     {

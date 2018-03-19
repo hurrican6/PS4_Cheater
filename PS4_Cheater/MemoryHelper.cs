@@ -33,9 +33,9 @@ namespace PS4_Cheater
         ULONG_TYPE,
         FLOAT_TYPE,
         DOUBLE_TYPE,
+        STRING_TYPE,
         HEX_TYPE,
         NONE_TYPE,
-
     }
 
     public class MemoryHelper
@@ -58,15 +58,10 @@ namespace PS4_Cheater
 
         public delegate string BytesToStringHandler(Byte[] value);
         public delegate Byte[] StringToBytesHandler(string value);
-        public delegate Byte[] GetBytesByTypeHandler(ulong address);
-        public delegate void SetBytesByTypeHandler(ulong address, byte[] value);
         public delegate bool ComparatorHandler(Byte[] default_value_0, Byte[] default_value_1, Byte[] old_value, Byte[] new_value);
-
-        CompareType cur_compare_type = CompareType.UNCHANGED_VALUE;
-
-        public GetBytesByTypeHandler GetBytesByType { get; set; }
-        public SetBytesByTypeHandler SetBytesByType { get; set; }
+        
         public BytesToStringHandler BytesToString { get; set; }
+        public BytesToStringHandler BytesToHexString { get; set; }
         public StringToBytesHandler StringToBytes { get; set; }
         public ComparatorHandler Comparer { get; set; }
 
@@ -134,6 +129,17 @@ namespace PS4_Cheater
                 return null;
             }
         }
+
+        public static string hex_to_string(byte[] bytes)
+        {
+            return BitConverter.ToString(bytes).Replace("-", "");
+        }
+
+        public static string string_to_string(Byte[] value)
+        {
+            return System.Text.Encoding.Default.GetString(value);
+        }
+
         public static string double_to_string(Byte[] value)
         {
             return BitConverter.ToDouble(value, 0).ToString();
@@ -150,7 +156,7 @@ namespace PS4_Cheater
         {
             return BitConverter.ToUInt32(value, 0).ToString();
         }
-        public static string ushort_to_string(Byte[] value)
+        public static string uint16_to_string(Byte[] value)
         {
             return BitConverter.ToUInt16(value, 0).ToString();
         }
@@ -158,17 +164,37 @@ namespace PS4_Cheater
         {
             return value[0].ToString();
         }
-        public static string bytes_to_hex_string(byte[] bytes)
+        public static string double_to_hex_string(Byte[] value)
         {
-            string returnStr = "";
-            if (bytes != null)
-            {
-                for (int i = 0; i < bytes.Length; i++)
-                {
-                    returnStr += bytes[i].ToString("X2");
-                }
-            }
-            return returnStr;
+            return BitConverter.ToUInt64(value, 0).ToString("X16");
+        }
+        public static string float_to_hex_string(Byte[] value)
+        {
+            return BitConverter.ToUInt32(value, 0).ToString("X8");
+        }
+        public static string ulong_to_hex_string(Byte[] value)
+        {
+            return BitConverter.ToUInt64(value, 0).ToString("X16");
+        }
+        public static string uint_to_hex_string(Byte[] value)
+        {
+            return BitConverter.ToUInt32(value, 0).ToString("X8");
+        }
+        public static string uint16_to_hex_string(Byte[] value)
+        {
+            return BitConverter.ToUInt16(value, 0).ToString("X4");
+        }
+        public static string uchar_to_hex_string(Byte[] value)
+        {
+            return value[0].ToString("X2");
+        }
+        public static string hex_to_hex_string(byte[] bytes)
+        {
+            return BitConverter.ToString(bytes).Replace("-", "");
+        }
+        public static string string_to_hex_string(Byte[] value)
+        {
+            return BitConverter.ToString(value).Replace("-", "");
         }
 
         public static byte[] string_to_double(string value)
@@ -197,64 +223,40 @@ namespace PS4_Cheater
         {
             return BitConverter.GetBytes(Byte.Parse(value));
         }
-        public static byte[] string_to_hex(string hexString)
+        public static byte[] string_to_hex_bytes(string hexString)
         {
-            hexString = hexString.Replace(" ", "");
-            if ((hexString.Length % 2) != 0)
-                hexString += "0";
             byte[] returnBytes = new byte[hexString.Length / 2];
             for (int i = 0; i < returnBytes.Length; i++)
                 returnBytes[i] = Convert.ToByte(hexString.Substring(i * 2, 2), 16);
             return returnBytes;
         }
 
-        byte[] get_bytes_8_bytes(ulong address)
+        public static byte[] string_to_string_bytes(string hexString)
         {
-            return ReadMemory(address, 8);
+            byte[] buffer = System.Text.Encoding.Default.GetBytes(hexString);
+            return buffer;
         }
 
-        byte[] get_bytes_4_bytes(ulong address)
+        public byte[] GetBytesByType(ulong address)
         {
-            return ReadMemory(address, 4);
+            return ReadMemory(address, Length);
         }
 
-        byte[] get_bytes_2_bytes(ulong address)
-        {
-            return ReadMemory(address, 2);
-        }
-        byte[] get_bytes_1_byte(ulong address)
-        {
-            return ReadMemory(address, 1);
-        }
-
-        void set_bytes_hex(ulong address, byte[] data)
-        {
-            WriteMemory(address, data);
-        }
-
-        void set_bytes_8_bytes(ulong address, byte[] data)
-        {
-            WriteMemory(address, data);
-        }
-
-        void set_bytes_4_bytes(ulong address, byte[] data)
-        {
-            WriteMemory(address, data);
-        }
-        void set_bytes_2_bytes(ulong address, byte[] data)
-        {
-            WriteMemory(address, data);
-        }
-        void set_bytes_1_byte(ulong address, byte[] data)
+        public void SetBytesByType(ulong address, byte[] data)
         {
             WriteMemory(address, data);
         }
 
         public void CompareWithMemoryBufferNextScanner(byte[] default_value_0, byte[] default_value_1, byte[] buffer,
-            AddressList old_address_list, AddressList new_address_list)
+            ResultList old_address_list, ResultList new_result_list)
         {
             int alignment = Alignment;
             int length = Length;
+
+            if (default_value_0.Length == 0)
+            {
+                return;
+            }
 
             Byte[] new_value = new byte[length];
             for (old_address_list.Begin(); !old_address_list.End(); old_address_list.Next())
@@ -265,16 +267,21 @@ namespace PS4_Cheater
                 Buffer.BlockCopy(buffer, (int)address_offset, new_value, 0, length);
                 if (Comparer(default_value_0, default_value_1, old_value, new_value))
                 {
-                    new_address_list.Add(address_offset, new_value);
+                    new_result_list.Add(address_offset, new_value);
                 }
             }
         }
 
         public void CompareWithMemoryBufferNewScanner(byte[] default_value_0, byte[] default_value_1, byte[] buffer,
-            AddressList old_address_list, AddressList new_address_list)
+            ResultList new_result_list)
         {
             int alignment = Alignment;
             int length = Length;
+
+            if (default_value_0.Length == 0)
+            {
+                return;
+            }
 
             Byte[] new_value = new byte[length];
             Byte[] dummy_value = new byte[length];
@@ -283,9 +290,32 @@ namespace PS4_Cheater
                 Buffer.BlockCopy(buffer, i, new_value, 0, length);
                 if (Comparer(default_value_0, default_value_1, dummy_value, new_value))
                 {
-                    new_address_list.Add((uint)i, new_value);
+                    new_result_list.Add((uint)i, new_value);
                 }
             }
+        }
+
+        [DllImport("msvcrt.dll")]
+        private static extern IntPtr memcmp(byte[] b1, byte[] b2, IntPtr count);
+
+        public bool scan_type_equal_hex(Byte[] default_value_0, Byte[] default_value_1, Byte[] old_value, Byte[] new_value)
+        {
+            if (default_value_0.Length != new_value.Length)
+            {
+                throw new ArgumentException("Length!!!");
+            }
+            IntPtr retval = memcmp(default_value_0, new_value, new IntPtr(new_value.Length));
+            return retval.ToInt64() == 0;
+        }
+
+        public bool scan_type_equal_string(Byte[] default_value_0, Byte[] default_value_1, Byte[] old_value, Byte[] new_value)
+        {
+            if (default_value_0.Length != new_value.Length)
+            {
+                throw new ArgumentException("Length!!!");
+            }
+            IntPtr retval = memcmp(default_value_0, new_value, new IntPtr(new_value.Length));
+            return retval.ToInt64() == 0;
         }
 
         bool scan_type_any_ulong(Byte[] default_value_0, Byte[] default_value_1, Byte[] old_value, Byte[] new_value)
@@ -638,26 +668,30 @@ namespace PS4_Cheater
             ValueType _valueType = ValueType.NONE_TYPE;
             switch (valueType)
             {
-                case "8 bytes":
+                case CONSTANT.BYTE_8_TYPE:
                     _valueType = ValueType.ULONG_TYPE;
                     break;
-                case "4 bytes":
+                case CONSTANT.BYTE_4_TYPE:
                     _valueType = ValueType.UINT_TYPE;
                     break;
-                case "2 bytes":
+                case CONSTANT.BYTE_2_TYPE:
                     _valueType = ValueType.USHORT_TYPE;
                     break;
-                case "byte":
+                case CONSTANT.BYTE_TYPE:
+                case CONSTANT.BYTE_1_TYPE:
                     _valueType = ValueType.BYTE_TYPE;
                     break;
-                case "double":
+                case CONSTANT.BYTE_DOUBLE_TYPE:
                     _valueType = ValueType.DOUBLE_TYPE;
                     break;
-                case "float":
+                case CONSTANT.BYTE_FLOAT_TYPE:
                     _valueType = ValueType.FLOAT_TYPE;
                     break;
-                case "hex":
+                case CONSTANT.BYTE_HEX_TYPE:
                     _valueType = ValueType.HEX_TYPE;
+                    break;
+                case CONSTANT.BYTE_STRING_TYPE:
+                    _valueType = ValueType.STRING_TYPE;
                     break;
                 default:
                     throw new Exception("GetValueTypeByString!!!");
@@ -670,89 +704,138 @@ namespace PS4_Cheater
             switch (valueType)
             {
                 case ValueType.ULONG_TYPE:
-                    return "8 bytes";
+                    return CONSTANT.BYTE_8_TYPE;
                 case ValueType.UINT_TYPE:
-                    return "4 bytes";
+                    return CONSTANT.BYTE_4_TYPE;
                 case ValueType.USHORT_TYPE:
-                    return "2 bytes";
+                    return CONSTANT.BYTE_2_TYPE;
                 case ValueType.BYTE_TYPE:
-                    return "byte";
+                    return CONSTANT.BYTE_TYPE;
                 case ValueType.DOUBLE_TYPE:
-                    return "double";
+                    return CONSTANT.BYTE_DOUBLE_TYPE;
                 case ValueType.FLOAT_TYPE:
-                    return "float";
+                    return CONSTANT.BYTE_FLOAT_TYPE;
                 case ValueType.HEX_TYPE:
-                    return "hex";
+                    return CONSTANT.BYTE_HEX_TYPE;
+                case ValueType.STRING_TYPE:
+                    return CONSTANT.BYTE_STRING_TYPE;
                 default:
                     throw new Exception("GetStringOfValueType!!!");
             }
         }
 
-        public void InitMemoryHandler(string valueType, CompareType compareType, bool is_alignment)
+        public static CompareType GetCompareByString(string compareTypeString)
+        {
+            switch (compareTypeString)
+            {
+                case CONSTANT.EXACT_VALUE:
+                    return CompareType.EXACT_VALUE;
+                case CONSTANT.FUZZY_VALUE:
+                    return CompareType.FUZZY_VALUE;
+                case CONSTANT.INCREASED_VALUE:
+                    return CompareType.INCREASED_VALUE;
+                case CONSTANT.INCREASED_VALUE_BY:
+                    return CompareType.INCREASED_VALUE_BY;
+                case CONSTANT.DECREASED_VALUE:
+                    return CompareType.DECREASED_VALUE;
+                case CONSTANT.DECREASED_VALUE_BY:
+                    return CompareType.DECREASED_VALUE_BY;
+                case CONSTANT.BIGGER_THAN:
+                    return CompareType.BIGGER_THAN_VALUE;
+                case CONSTANT.SMALLER_THAN:
+                    return CompareType.SMALLER_THAN_VALUE;
+                case CONSTANT.CHANGED_VALUE:
+                    return CompareType.CHANGED_VALUE;
+                case CONSTANT.UNCHANGED_VALUE:
+                    return CompareType.UNCHANGED_VALUE;
+                case CONSTANT.BETWEEN_VALUE:
+                    return CompareType.BETWEEN_VALUE;
+                case CONSTANT.UNKNOWN_INITIAL_VALUE:
+                    return CompareType.UNKNOWN_INITIAL_VALUE;
+                default:
+                    throw new Exception("compareType???");
+            }
+        }
+        public void InitNextScanMemoryHandler(string valueType, string compareType, bool is_alignment)
         {
             ValueType _valueType = GetValueTypeByString(valueType);
-            InitMemoryHandler(_valueType, compareType, is_alignment);
-        }
-        public void InitMemoryHandler(ValueType valueType, CompareType compareType, bool is_alignment)
-        {
-            cur_compare_type = compareType;
+            CompareType _compareType = GetCompareByString(compareType);
 
+            if (_valueType == ValueType.HEX_TYPE)
+            {
+                Length *= 2;
+            }
+
+            InitMemoryHandler(_valueType, _compareType, is_alignment, Length);
+        }
+
+        public void InitMemoryHandler(string valueType, string compareType, bool is_alignment, int type_length = 0)
+        {
+            ValueType _valueType = GetValueTypeByString(valueType);
+            CompareType _compareType = GetCompareByString(compareType);
+
+            InitMemoryHandler(_valueType, _compareType, is_alignment, type_length);
+        }
+
+        public void InitMemoryHandler(ValueType valueType, CompareType compareType, bool is_alignment, int type_length = 0)
+        {
             switch (valueType)
             {
                 case ValueType.DOUBLE_TYPE:
-                    SetBytesByType = set_bytes_8_bytes;
-                    GetBytesByType = get_bytes_8_bytes;
                     BytesToString = double_to_string;
+                    BytesToHexString = double_to_hex_string;
                     StringToBytes = string_to_double;
                     Length = sizeof(double);
                     Alignment = (is_alignment) ? 4 : 1;
                     break;
                 case ValueType.FLOAT_TYPE:
-                    SetBytesByType = set_bytes_4_bytes;
-                    GetBytesByType = get_bytes_4_bytes;
                     BytesToString = float_to_string;
+                    BytesToHexString = float_to_hex_string;
                     StringToBytes = string_to_float;
                     Length = sizeof(float);
                     Alignment = (is_alignment) ? 4 : 1;
                     break;
                 case ValueType.ULONG_TYPE:
-                    SetBytesByType = set_bytes_8_bytes;
-                    GetBytesByType = get_bytes_8_bytes;
                     BytesToString = ulong_to_string;
+                    BytesToHexString = ulong_to_hex_string;
                     StringToBytes = string_to_8_bytes;
                     Length = sizeof(ulong);
                     Alignment = (is_alignment) ? 4 : 1;
                     break;
                 case ValueType.UINT_TYPE:
-                    SetBytesByType = set_bytes_4_bytes;
-                    GetBytesByType = get_bytes_4_bytes;
                     BytesToString = uint_to_string;
+                    BytesToHexString = uint_to_hex_string;
                     StringToBytes = string_to_4_bytes;
                     Length = sizeof(uint);
                     Alignment = (is_alignment) ? 4 : 1;
                     break;
                 case ValueType.USHORT_TYPE:
-                    SetBytesByType = set_bytes_2_bytes;
-                    GetBytesByType = get_bytes_2_bytes;
-                    BytesToString = ushort_to_string;
+                    BytesToString = uint16_to_string;
+                    BytesToHexString = uint16_to_hex_string;
                     StringToBytes = string_to_2_bytes;
                     Length = sizeof(ushort);
                     Alignment = (is_alignment) ? 2 : 1;
                     break;
                 case ValueType.BYTE_TYPE:
-                    SetBytesByType = set_bytes_1_byte;
-                    GetBytesByType = get_bytes_1_byte;
                     BytesToString = uchar_to_string;
+                    BytesToHexString = uchar_to_hex_string;
                     StringToBytes = string_to_1_byte;
                     Length = sizeof(byte);
                     Alignment = 1;
                     break;
                 case ValueType.HEX_TYPE:
-                    SetBytesByType = set_bytes_hex;
-                    GetBytesByType = null;
-                    BytesToString = bytes_to_hex_string;
-                    StringToBytes = string_to_2_bytes;
+                    BytesToString = hex_to_string;
+                    BytesToHexString = hex_to_hex_string;
+                    StringToBytes = string_to_hex_bytes;
                     Alignment = 1;
+                    Length = type_length / 2;
+                    break;
+                case ValueType.STRING_TYPE:
+                    BytesToString = string_to_string;
+                    BytesToHexString = string_to_hex_string;
+                    StringToBytes = string_to_string_bytes;
+                    Alignment = 1;
+                    Length = type_length;
                     break;
                 default:
                     break;
@@ -818,6 +901,12 @@ namespace PS4_Cheater
                             break;
                         case ValueType.BYTE_TYPE:
                             Comparer = scan_type_equal_uint8;
+                            break;
+                        case ValueType.HEX_TYPE:
+                            Comparer = scan_type_equal_hex;
+                            break;
+                        case ValueType.STRING_TYPE:
+                            Comparer = scan_type_equal_string;
                             break;
                         default:
                             break;

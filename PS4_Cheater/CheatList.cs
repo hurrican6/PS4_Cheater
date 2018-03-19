@@ -53,9 +53,9 @@ namespace PS4_Cheater
                 case ValueType.ULONG_TYPE:
                 case ValueType.FLOAT_TYPE:
                 case ValueType.DOUBLE_TYPE:
-                    return CheatType.DATA_TYPE;
+                case ValueType.STRING_TYPE:
                 case ValueType.HEX_TYPE:
-                    return CheatType.HEX_TYPE;
+                    return CheatType.DATA_TYPE;
                 default:
                     throw new ArgumentException("Unkown value type.");
             }
@@ -85,15 +85,20 @@ namespace PS4_Cheater
         private const int CHEAT_CODE_DATA_TYPE_VALUE = 4;
         private const int CHEAT_CODE_DATA_TYPE_FLAG = 5;
         private const int CHEAT_CODE_DATA_TYPE_DESCRIPTION = 6;
+        private const int CHEAT_CODE_DATA_TYPE_ADDRESS = 7;
 
         private const int CHEAT_CODE_DATA_TYPE_ELEMENT_COUNT = CHEAT_CODE_DATA_TYPE_DESCRIPTION + 1;
 
         private string value_;
-        public override string Value {
-            get {
+ 
+        public override string Value
+        {
+            get
+            {
                 return value_;
             }
-            set {
+            set
+            {
                 value_ = value;
                 MemoryHelper memoryHelper = new MemoryHelper();
                 memoryHelper.InitMemoryHandler(Type, CompareType.NONE, false);
@@ -166,116 +171,18 @@ namespace PS4_Cheater
             save_buf += MemoryHelper.GetStringOfValueType(Type) + "|";
             save_buf += Value + "|";
             save_buf += Lock ? "1" : "0" + "|";
-            save_buf += Description + "|\n";
+            save_buf += Description + "|";
+            save_buf += Address + "\n";
             return save_buf;
         }
 
         public override void Refresh()
         {
             MemoryHelper memoryHelper = new MemoryHelper();
-            memoryHelper.InitMemoryHandler(Type, CompareType.NONE, false);
+            memoryHelper.InitMemoryHandler(Type, CompareType.NONE, false, Value.Length);
 
             memoryHelper.SetBytesByType(ulong.Parse(Address, NumberStyles.HexNumber), memoryHelper.StringToBytes(value_));
             value_ = memoryHelper.BytesToString(memoryHelper.GetBytesByType(ulong.Parse(Address, NumberStyles.HexNumber)));
-        }
-    }
-
-    public class HexCheat : Cheat
-    {
-        private const int CHEAT_CODE_HEX_TYPE_SECTION_ID = 1;
-        private const int CHEAT_CODE_HEX_TYPE_ADDRESS_OFFSET = 2;
-        private const int CHEAT_CODE_HEX_TYPE_VALUE_TYPE = 3;
-        private const int CHEAT_CODE_HEX_TYPE_LEN = 4;
-        private const int CHEAT_CODE_HEX_TYPE_VALUE = 5;
-        private const int CHEAT_CODE_HEX_TYPE_FLAG = 6;
-        private const int CHEAT_CODE_HEX_TYPE_DESCRIPTION = 7;
-
-        private const int CHEAT_CODE_HEX_TYPE_ELEMENT_COUNT = CHEAT_CODE_HEX_TYPE_DESCRIPTION + 1;
-
-        public int SectionID { get; set; }
-
-        private string value_;
-        public override string Value
-        {
-            get
-            {
-                return value_;
-            }
-            set
-            {
-                value_ = value;
-                MemoryHelper.WriteMemory(ulong.Parse(Address, NumberStyles.HexNumber), MemoryHelper.string_to_hex(value_));
-            }
-        }
-
-        public HexCheat(ProcessManager processManager, string address, int sectionID,
-            string value, bool lock_, ValueType type, string description):
-            base(processManager)
-        {
-            this.Address = address;
-            this.SectionID = sectionID;
-            this.Type = type;
-            this.Description = description;
-            CheatType = CheatType.HEX_TYPE;
-            AllowLock = false;
-            this.Value = value;
-        }
-
-        public HexCheat(ProcessManager processManager):
-                        base(processManager)
-        {
-            CheatType = CheatType.HEX_TYPE;
-            AllowLock = false;
-        }
-
-        public override bool Load(string[] elements, ProcessManager processManager)
-        {
-            if (elements.Length < CHEAT_CODE_HEX_TYPE_ELEMENT_COUNT)
-            {
-                return false;
-            }
-
-            int sectionID = int.Parse(elements[CHEAT_CODE_HEX_TYPE_SECTION_ID]);
-            if (sectionID >= processManager.MappedSectionList.Count || sectionID < 0)
-            {
-                return false;
-            }
-
-            Address = (ulong.Parse(elements[CHEAT_CODE_HEX_TYPE_ADDRESS_OFFSET], NumberStyles.HexNumber) +
-                processManager.MappedSectionList[sectionID].Start).ToString("X2");
-
-            Type = MemoryHelper.GetValueTypeByString(elements[CHEAT_CODE_HEX_TYPE_VALUE_TYPE]);
-            value_ = elements[CHEAT_CODE_HEX_TYPE_VALUE];
-
-            ulong flag = ulong.Parse(elements[CHEAT_CODE_HEX_TYPE_FLAG], NumberStyles.HexNumber);
-
-            Description = elements[CHEAT_CODE_HEX_TYPE_DESCRIPTION];
-
-            return true;
-        }
-        public override void Refresh()
-        {
-            if (value_.Length % 2 != 0)
-            {
-                value_ += "0";
-            }
-
-            value_ = MemoryHelper.bytes_to_hex_string(MemoryHelper.ReadMemory(ulong.Parse(Address, NumberStyles.HexNumber), value_.Length/2));
-        }
-
-        public override string Save()
-        {
-            ulong addressDec = ulong.Parse(Address, NumberStyles.HexNumber);
-            MappedSection mappedSection =  processManager.GetMappedSection(addressDec);
-            string save_buf = "";
-            save_buf += "hex|";
-            save_buf += SectionID + "|";
-            save_buf += String.Format("{0:X}", addressDec - mappedSection.Start) + "|";
-            save_buf += MemoryHelper.GetStringOfValueType(Type) + "|";
-            save_buf += Value + "|";
-            save_buf += "0";
-            save_buf += Description + "|\n";
-            return save_buf;
         }
     }
 
@@ -370,14 +277,6 @@ namespace PS4_Cheater
                             if (cheat.Load(cheat_elements, processManager) && !Exist(cheat))
                             {
 
-                                cheat_list.Add(cheat);
-                            }
-                        }
-                        else if (cheat_elements[CHEAT_CODE_TYPE] == "hex")
-                        {
-                            cheat = new HexCheat(processManager);
-                            if (cheat.Load(cheat_elements, processManager) && !Exist(cheat))
-                            {
                                 cheat_list.Add(cheat);
                             }
                         }

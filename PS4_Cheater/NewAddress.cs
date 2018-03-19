@@ -51,6 +51,7 @@ namespace PS4_Cheater
 
         private void NewAddress_Load(object sender, EventArgs e)
         {
+            type_box.Items.AddRange(CONSTANT.SEARCH_VALUE_TYPE);
             type_box.SelectedIndex = 2;
         }
 
