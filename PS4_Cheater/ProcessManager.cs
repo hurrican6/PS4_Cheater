@@ -400,7 +400,7 @@ namespace PS4_Cheater
             ulong total_result_count = 0;
             for (int idx = 0; idx < MappedSectionList.Count; ++idx)
             {
-                if (MappedSectionList[idx].Check)
+                if (MappedSectionList[idx].Check && MappedSectionList[idx].ResultList != null)
                 {
                     total_result_count += (ulong)MappedSectionList[idx].ResultList.Count;
                 }

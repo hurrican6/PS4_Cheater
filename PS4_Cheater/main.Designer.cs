@@ -733,7 +733,7 @@ namespace PS4_Cheater
             this.next_scan_btn.Name = "next_scan_btn";
             this.next_scan_btn.Size = new System.Drawing.Size(275, 25);
             this.next_scan_btn.TabIndex = 15;
-            this.next_scan_btn.Text = "Next Scan";
+
             this.next_scan_btn.UseMnemonic = false;
             this.next_scan_btn.UseVisualStyleBackColor = false;
             this.next_scan_btn.Click += new System.EventHandler(this.next_scan_btn_Click);
@@ -754,7 +754,6 @@ namespace PS4_Cheater
             this.new_scan_btn.Name = "new_scan_btn";
             this.new_scan_btn.Size = new System.Drawing.Size(274, 25);
             this.new_scan_btn.TabIndex = 13;
-            this.new_scan_btn.Text = "First Scan";
             this.new_scan_btn.UseMnemonic = false;
             this.new_scan_btn.UseVisualStyleBackColor = false;
             this.new_scan_btn.Click += new System.EventHandler(this.new_scan_btn_Click);
@@ -775,7 +774,6 @@ namespace PS4_Cheater
             this.refresh_btn.Name = "refresh_btn";
             this.refresh_btn.Size = new System.Drawing.Size(275, 25);
             this.refresh_btn.TabIndex = 14;
-            this.refresh_btn.Text = "Refresh";
             this.refresh_btn.UseMnemonic = false;
             this.refresh_btn.UseVisualStyleBackColor = false;
             this.refresh_btn.Click += new System.EventHandler(this.refresh_Click);
@@ -786,7 +784,7 @@ namespace PS4_Cheater
             this.new_scan_worker.WorkerSupportsCancellation = true;
             this.new_scan_worker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.new_scan_worker_DoWork);
             this.new_scan_worker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.new_scan_worker_ProgressChanged);
-            this.new_scan_worker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.worker_RunWorkerCompleted);
+            this.new_scan_worker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.new_scan_worker_RunWorkerCompleted);
             // 
             // next_scan_worker
             // 
@@ -794,7 +792,7 @@ namespace PS4_Cheater
             this.next_scan_worker.WorkerSupportsCancellation = true;
             this.next_scan_worker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.next_scan_worker_DoWork);
             this.next_scan_worker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.update_result_list_worker_ProgressChanged);
-            this.next_scan_worker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.worker_RunWorkerCompleted);
+            this.next_scan_worker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.next_scan_worker_RunWorkerCompleted);
             // 
             // update_result_list_worker
             // 
@@ -802,7 +800,7 @@ namespace PS4_Cheater
             this.update_result_list_worker.WorkerSupportsCancellation = true;
             this.update_result_list_worker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.update_result_list_worker_DoWork);
             this.update_result_list_worker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.update_result_list_worker_ProgressChanged);
-            this.update_result_list_worker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.worker_RunWorkerCompleted);
+            this.update_result_list_worker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.update_result_list_worker_RunWorkerCompleted);
             // 
             // main
             // 

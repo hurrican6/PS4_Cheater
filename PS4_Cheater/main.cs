@@ -57,7 +57,7 @@
         };
 
         private string[] SEARCH_BY_FLOAT_NEXT = new string[]
-{
+        {
              CONSTANT.EXACT_VALUE,
              CONSTANT.FUZZY_VALUE,
              CONSTANT.INCREASED_VALUE,
@@ -69,7 +69,7 @@
              CONSTANT.CHANGED_VALUE,
              CONSTANT.UNCHANGED_VALUE,
              CONSTANT.BETWEEN_VALUE,
-};
+        };
 
         private string[] SEARCH_BY_BYTES_NEXT = new string[]
         {
@@ -121,6 +121,9 @@
                 ip_box.Text = ip;
             }
 
+            this.next_scan_btn.Text = CONSTANT.NEXT_SCAN;
+            this.new_scan_btn.Text = CONSTANT.FIRST_SCAN;
+            this.refresh_btn.Text = CONSTANT.REFRESH;
             this.Text += " " + CONSTANT.MAJOR_VERSION + "." + CONSTANT.SECONDARY_VERSION + "." + CONSTANT.THIRD_VERSION;
         }
 
@@ -155,7 +158,7 @@
         class WorkerReturn
         {
             public List<ListViewItem> ListViewItems { get; set; }
-            public HashSet<int> MappedSectionCheckeSet { get; set; }
+            public bool[] MappedSectionCheckeSet { get; set; }
             public ulong Results { get; set; }
         }
 
@@ -164,11 +167,13 @@
             worker.ReportProgress(start);
 
             List<ListViewItem> listViewItems = new List<ListViewItem>();
-            HashSet<int> mappedSectionCheckeSet = new HashSet<int>();
+            bool[] mappedSectionCheckeSet = new bool[processManager.MappedSectionList.Count];
 
             ulong totalResultCount = processManager.TotalResultCount();
             ulong curResultCount = 0;
             string value_type = MemoryHelper.GetStringOfValueType(memoryHelper.ValueType);
+
+            const int MAX_RESULTS_NUM = 0x10000;
 
             for (int idx = 0; idx < processManager.MappedSectionList.Count; ++idx)
             {
@@ -178,14 +183,16 @@
                 {
                     continue;
                 }
-
-                if (result_list.Count > 0)
+                if (!mapped_section.Check)
                 {
-                    mappedSectionCheckeSet.Add(idx);
+                    continue;
                 }
+
+                mappedSectionCheckeSet[idx] = result_list.Count > 0;
+
                 for (result_list.Begin(); !result_list.End(); result_list.Next())
                 {
-                    if (curResultCount >= 0x1000)
+                    if (curResultCount >= MAX_RESULTS_NUM)
                     {
                         break;
                     }
@@ -200,11 +207,11 @@
 
                     lvi.Text = String.Format("{0:X}", memory_address_offset + mapped_section.Start);
 
-                    if (refresh)
+                    if (refresh && !worker.CancellationPending)
                     {
                         memory_value = memoryHelper.GetBytesByType(memory_address_offset + mapped_section.Start);
                         result_list.Set(memory_value);
-                        worker.ReportProgress(start + (int)(100.0f * curResultCount / 0x1000));
+                        worker.ReportProgress(start + (int)(100.0f * curResultCount / MAX_RESULTS_NUM));
                     }
 
                     lvi.SubItems.Add(value_type);
@@ -240,7 +247,7 @@
         {
             try
             {
-                if (new_scan_btn.Text == "First Scan")
+                if (new_scan_btn.Text == CONSTANT.FIRST_SCAN)
                 {
                     if (MessageBox.Show("search size:" + (processManager.TotalMemorySize / 1024).ToString() + "KB") != DialogResult.OK)
                     {
@@ -251,22 +258,28 @@
                         (string)compareTypeList.SelectedItem, alignment_box.Checked, value_box.Text.Length);
 
                     setButtons(false);
+                    new_scan_btn.Enabled = true;
+                    valueTypeList.Enabled = false;
 
                     new_scan_worker.RunWorkerAsync();
-                    valueTypeList.Enabled = false;
-                    new_scan_btn.Text = "New Scan";
+
+                    new_scan_btn.Text = CONSTANT.STOP;
                     InitCompareTypeListOfNextScan();
                 }
-                else if (new_scan_btn.Text == "New Scan")
+                else if (new_scan_btn.Text == CONSTANT.NEW_SCAN)
                 {
                     valueTypeList.Enabled = true;
                     refresh_btn.Enabled = false;
                     next_scan_btn.Enabled = false;
-                    new_scan_btn.Text = "First Scan";
+                    new_scan_btn.Text = CONSTANT.FIRST_SCAN;
 
                     result_list_view.Items.Clear();
                     processManager.ClearResultList();
                     InitCompareTypeListOfFirstScan();
+                }
+                else if (new_scan_btn.Text == CONSTANT.STOP)
+                {
+                    new_scan_worker.CancelAsync();
                 }
             }
             catch (Exception exception)
@@ -279,8 +292,17 @@
         {
             try
             {
-                setButtons(false);
-                update_result_list_worker.RunWorkerAsync();
+                if (refresh_btn.Text == "Refresh")
+                {
+                    setButtons(false);
+                    refresh_btn.Enabled = true;
+                    refresh_btn.Text = CONSTANT.STOP;
+                    update_result_list_worker.RunWorkerAsync();
+                }
+                else if (refresh_btn.Text == CONSTANT.STOP)
+                {
+                    update_result_list_worker.CancelAsync();
+                }
             }
             catch (Exception exception)
             {
@@ -292,9 +314,18 @@
         {
             try
             {
-                memoryHelper.InitNextScanMemoryHandler((string)compareTypeList.SelectedItem);
-                setButtons(false);
-                next_scan_worker.RunWorkerAsync();
+                if (next_scan_btn.Text == "Next Scan")
+                {
+                    memoryHelper.InitNextScanMemoryHandler((string)compareTypeList.SelectedItem);
+                    setButtons(false);
+                    next_scan_btn.Enabled = true;
+                    next_scan_btn.Text = CONSTANT.STOP;
+                    next_scan_worker.RunWorkerAsync();
+                }
+                else if (next_scan_btn.Text == CONSTANT.STOP)
+                {
+                    next_scan_worker.CancelAsync();
+                }
             }
             catch (Exception exception)
             {
@@ -325,14 +356,7 @@
 
             for (int i = 0; i < section_list_box.Items.Count; ++i)
             {
-                if (ret.MappedSectionCheckeSet.Contains(i))
-                {
-                    section_list_box.SetItemChecked(i, true);
-                }
-                else
-                {
-                    section_list_box.SetItemChecked(i, false);
-                }
+                section_list_box.SetItemChecked(i, ret.MappedSectionCheckeSet[i]);
             }
             msg.Text = ret.Results + " results";
         }
@@ -346,6 +370,7 @@
             next_scan_worker.ReportProgress(0);
             for (int section_idx = 0; section_idx < processManager.MappedSectionList.Count; ++section_idx)
             {
+                if (next_scan_worker.CancellationPending) break;
                 MappedSection mappedSection = processManager.MappedSectionList[section_idx];
                 mappedSection.UpdateResultList(processManager, memoryHelper, value_0, value_1, false);
                 if (mappedSection.Check) processed_memory_len += mappedSection.Length;
@@ -370,6 +395,7 @@
             new_scan_worker.ReportProgress(0);
             for (int section_idx = 0; section_idx < processManager.MappedSectionList.Count; ++section_idx)
             {
+                if (new_scan_worker.CancellationPending) break;
                 MappedSection mappedSection = processManager.MappedSectionList[section_idx];
                 mappedSection.UpdateResultList(processManager, memoryHelper, value_0, value_1, true);
                 if (mappedSection.Check) processed_memory_len += mappedSection.Length;
@@ -417,14 +443,6 @@
             progressBar.Value = e.ProgressPercentage;
         }
 
-        private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (e.Error != null)
-            {
-                msg.Text = e.Error.Message;
-            }
-            setButtons(true);
-        }
         private void dump_dialog(int sectionID)
         {
             if (sectionID >= 0)
@@ -905,6 +923,36 @@
                 and_label.Visible = false;
                 value_box.Width = 274;
             }
+        }
+
+        private void new_scan_worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            new_scan_btn.Text = CONSTANT.FIRST_SCAN;
+            if (e.Error != null)
+            {
+                msg.Text = e.Error.Message;
+            }
+            setButtons(true);
+        }
+
+        private void update_result_list_worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            refresh_btn.Text = CONSTANT.REFRESH;
+            if (e.Error != null)
+            {
+                msg.Text = e.Error.Message;
+            }
+            setButtons(true);
+        }
+
+        private void next_scan_worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            next_scan_btn.Text = CONSTANT.NEXT_SCAN;
+            if (e.Error != null)
+            {
+                msg.Text = e.Error.Message;
+            }
+            setButtons(true);
         }
     }
 }

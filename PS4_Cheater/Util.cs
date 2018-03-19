@@ -41,6 +41,12 @@ namespace PS4_Cheater
         public const string BYTE_STRING_TYPE = "string";
         public const string BYTE_HEX_TYPE = "hex";
 
+        public const string STOP = "Stop";
+        public const string FIRST_SCAN = "First Scan";
+        public const string NEW_SCAN = "New Scan";
+        public const string NEXT_SCAN = "Next Scan";
+        public const string REFRESH = "Refresh";
+
         public static string[] SEARCH_VALUE_TYPE = new string[]
         {
              CONSTANT.BYTE_TYPE,
