@@ -19,13 +19,14 @@
         private MemoryHelper memoryHelper = new MemoryHelper();
         private CheatList cheatList = new CheatList();
 
-        private const int CHEAT_LIST_ENABLED = 0;
+        private const int CHEAT_LIST_DEL = 0;
         private const int CHEAT_LIST_ADDRESS = 1;
         private const int CHEAT_LIST_TYPE = 2;
-        private const int CHEAT_LIST_VALUE = 3;
-        private const int CHEAT_LIST_SECTION = 4;
-        private const int CHEAT_LIST_LOCK = 5;
-        private const int CHEAT_LIST_DESC = 6;
+        private const int CHEAT_LIST_ENABLED = 3;
+        private const int CHEAT_LIST_VALUE = 4;
+        private const int CHEAT_LIST_SECTION = 5;
+        private const int CHEAT_LIST_LOCK = 6;
+        private const int CHEAT_LIST_DESC = 7;
 
         private const int RESULT_LIST_ADDRESS = 0;
         private const int RESULT_LIST_TYPE = 1;
@@ -628,11 +629,16 @@
         {
             try
             {
+                if (e.RowIndex < 0) return;
+
                 switch (e.ColumnIndex)
                 {
                     case CHEAT_LIST_ENABLED:
                         cheat_list_view.EndEdit();
                         cheatList[e.RowIndex].Value = cheatList[e.RowIndex].Value;
+                        break;
+                    case CHEAT_LIST_DEL:
+                        cheat_list_view.Rows.RemoveAt(e.RowIndex);
                         break;
                     case CHEAT_LIST_LOCK:
                         cheat_list_view.EndEdit();
