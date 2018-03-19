@@ -264,7 +264,7 @@ namespace PS4_Cheater
                     string cheat_tuple = cheats[i];
                     try
                     {
-                        string[] cheat_elements = cheat_tuple.Split('|');
+                        string[] cheat_elements = cheat_tuple.Split(new string[] { "|" }, StringSplitOptions.None);
 
                         if (cheat_elements.Length == 0)
                         {

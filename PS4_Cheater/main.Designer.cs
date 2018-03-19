@@ -66,13 +66,6 @@ namespace PS4_Cheater
             this.save_cheat_list_btn = new System.Windows.Forms.Button();
             this.new_cheat_list_btn = new System.Windows.Forms.Button();
             this.cheat_list_view = new System.Windows.Forms.DataGridView();
-            this.cheat_list_view_active = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.cheat_list_view_address = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cheat_list_view_type = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cheat_list_view_value = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cheat_list_view_section = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cheat_list_view_lock = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.cheat_list_view_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.section_list_box = new System.Windows.Forms.CheckedListBox();
             this.section_list_menu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.section_view_menu = new System.Windows.Forms.ToolStripMenuItem();
@@ -112,6 +105,13 @@ namespace PS4_Cheater
             this.next_scan_worker = new System.ComponentModel.BackgroundWorker();
             this.open_file_dialog = new System.Windows.Forms.OpenFileDialog();
             this.update_result_list_worker = new System.ComponentModel.BackgroundWorker();
+            this.cheat_list_view_active = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.cheat_list_view_address = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cheat_list_view_type = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cheat_list_view_value = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cheat_list_view_section = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cheat_list_view_lock = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.cheat_list_view_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.cheat_list_view)).BeginInit();
             this.section_list_menu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -233,9 +233,7 @@ namespace PS4_Cheater
             // cheat_list_view
             // 
             this.cheat_list_view.AllowUserToAddRows = false;
-            this.cheat_list_view.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.cheat_list_view.AllowUserToResizeRows = false;
             this.cheat_list_view.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.cheat_list_view.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.cheat_list_view_active,
@@ -246,59 +244,16 @@ namespace PS4_Cheater
             this.cheat_list_view_lock,
             this.cheat_list_view_description});
             this.cheat_list_view.Location = new System.Drawing.Point(0, 36);
-            this.cheat_list_view.MultiSelect = false;
             this.cheat_list_view.Name = "cheat_list_view";
+            this.cheat_list_view.RowHeadersVisible = false;
             this.cheat_list_view.RowTemplate.Height = 23;
+            this.cheat_list_view.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.cheat_list_view.Size = new System.Drawing.Size(703, 255);
             this.cheat_list_view.TabIndex = 50;
             this.cheat_list_view.TabStop = false;
             this.cheat_list_view.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.cheat_list_view_CellClick);
             this.cheat_list_view.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.cheat_list_view_CellEndEdit);
             this.cheat_list_view.RowsRemoved += new System.Windows.Forms.DataGridViewRowsRemovedEventHandler(this.cheat_list_view_RowsRemoved);
-            // 
-            // cheat_list_view_active
-            // 
-            this.cheat_list_view_active.Frozen = true;
-            this.cheat_list_view_active.HeaderText = "X";
-            this.cheat_list_view_active.Name = "cheat_list_view_active";
-            this.cheat_list_view_active.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.cheat_list_view_active.Text = "X";
-            this.cheat_list_view_active.Width = 15;
-            // 
-            // cheat_list_view_address
-            // 
-            this.cheat_list_view_address.HeaderText = "Address";
-            this.cheat_list_view_address.Name = "cheat_list_view_address";
-            this.cheat_list_view_address.ReadOnly = true;
-            // 
-            // cheat_list_view_type
-            // 
-            this.cheat_list_view_type.HeaderText = "Type";
-            this.cheat_list_view_type.Name = "cheat_list_view_type";
-            this.cheat_list_view_type.ReadOnly = true;
-            // 
-            // cheat_list_view_value
-            // 
-            this.cheat_list_view_value.HeaderText = "Value";
-            this.cheat_list_view_value.Name = "cheat_list_view_value";
-            // 
-            // cheat_list_view_section
-            // 
-            this.cheat_list_view_section.HeaderText = "Section";
-            this.cheat_list_view_section.Name = "cheat_list_view_section";
-            this.cheat_list_view_section.ReadOnly = true;
-            // 
-            // cheat_list_view_lock
-            // 
-            this.cheat_list_view_lock.HeaderText = "Lock";
-            this.cheat_list_view_lock.Name = "cheat_list_view_lock";
-            this.cheat_list_view_lock.Width = 35;
-            // 
-            // cheat_list_view_description
-            // 
-            this.cheat_list_view_description.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.cheat_list_view_description.HeaderText = "Description";
-            this.cheat_list_view_description.Name = "cheat_list_view_description";
             // 
             // section_list_box
             // 
@@ -733,7 +688,6 @@ namespace PS4_Cheater
             this.next_scan_btn.Name = "next_scan_btn";
             this.next_scan_btn.Size = new System.Drawing.Size(275, 25);
             this.next_scan_btn.TabIndex = 15;
-
             this.next_scan_btn.UseMnemonic = false;
             this.next_scan_btn.UseVisualStyleBackColor = false;
             this.next_scan_btn.Click += new System.EventHandler(this.next_scan_btn_Click);
@@ -802,6 +756,55 @@ namespace PS4_Cheater
             this.update_result_list_worker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.update_result_list_worker_ProgressChanged);
             this.update_result_list_worker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.update_result_list_worker_RunWorkerCompleted);
             // 
+            // cheat_list_view_active
+            // 
+            this.cheat_list_view_active.Frozen = true;
+            this.cheat_list_view_active.HeaderText = "X";
+            this.cheat_list_view_active.Name = "cheat_list_view_active";
+            this.cheat_list_view_active.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.cheat_list_view_active.Text = "X";
+            this.cheat_list_view_active.Width = 25;
+            // 
+            // cheat_list_view_address
+            // 
+            this.cheat_list_view_address.HeaderText = "Address";
+            this.cheat_list_view_address.Name = "cheat_list_view_address";
+            this.cheat_list_view_address.ReadOnly = true;
+            this.cheat_list_view_address.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // cheat_list_view_type
+            // 
+            this.cheat_list_view_type.HeaderText = "Type";
+            this.cheat_list_view_type.Name = "cheat_list_view_type";
+            this.cheat_list_view_type.ReadOnly = true;
+            this.cheat_list_view_type.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // cheat_list_view_value
+            // 
+            this.cheat_list_view_value.HeaderText = "Value";
+            this.cheat_list_view_value.Name = "cheat_list_view_value";
+            this.cheat_list_view_value.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // cheat_list_view_section
+            // 
+            this.cheat_list_view_section.HeaderText = "Section";
+            this.cheat_list_view_section.Name = "cheat_list_view_section";
+            this.cheat_list_view_section.ReadOnly = true;
+            this.cheat_list_view_section.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // cheat_list_view_lock
+            // 
+            this.cheat_list_view_lock.HeaderText = "Lock";
+            this.cheat_list_view_lock.Name = "cheat_list_view_lock";
+            this.cheat_list_view_lock.Width = 35;
+            // 
+            // cheat_list_view_description
+            // 
+            this.cheat_list_view_description.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.cheat_list_view_description.HeaderText = "Description";
+            this.cheat_list_view_description.Name = "cheat_list_view_description";
+            this.cheat_list_view_description.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
             // main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -849,6 +852,7 @@ namespace PS4_Cheater
         private Label value_label;
         private Label and_label;
         private CheckBox alignment_box;
+        private BackgroundWorker update_result_list_worker;
         private DataGridViewButtonColumn cheat_list_view_active;
         private DataGridViewTextBoxColumn cheat_list_view_address;
         private DataGridViewTextBoxColumn cheat_list_view_type;
@@ -856,6 +860,5 @@ namespace PS4_Cheater
         private DataGridViewTextBoxColumn cheat_list_view_section;
         private DataGridViewCheckBoxColumn cheat_list_view_lock;
         private DataGridViewTextBoxColumn cheat_list_view_description;
-        private BackgroundWorker update_result_list_worker;
     }
 }

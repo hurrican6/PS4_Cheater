@@ -628,10 +628,6 @@
         {
             try
             {
-                DataGridViewRow edited_row = cheat_list_view.Rows[e.RowIndex];
-
-                object edited_col = null;
-
                 switch (e.ColumnIndex)
                 {
                     case CHEAT_LIST_ENABLED:
@@ -640,7 +636,8 @@
                         break;
                     case CHEAT_LIST_LOCK:
                         cheat_list_view.EndEdit();
-                        edited_col = edited_row.Cells[e.ColumnIndex].Value;
+                        DataGridViewRow edited_row = cheat_list_view.Rows[e.RowIndex];
+                        object edited_col = edited_row.Cells[e.ColumnIndex].Value;
                         cheatList[e.RowIndex].Lock = (bool)edited_col;
                         break;
                 }
