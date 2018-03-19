@@ -68,6 +68,9 @@ namespace PS4_Cheater
         public int Length { get; set; }
         public int Alignment { get; set; }
 
+        public ValueType ValueType { get; set; }
+        public CompareType CompareType { get; set; }
+
         public static byte[] ReadMemory(ulong address, int length)
         {
             mutex.WaitOne();
@@ -756,29 +759,42 @@ namespace PS4_Cheater
                     throw new Exception("compareType???");
             }
         }
-        public void InitNextScanMemoryHandler(string valueType, string compareType, bool is_alignment)
+        public void InitNextScanMemoryHandler(string compareType)
         {
-            ValueType _valueType = GetValueTypeByString(valueType);
-            CompareType _compareType = GetCompareByString(compareType);
+            CompareType = GetCompareByString(compareType);
 
-            if (_valueType == ValueType.HEX_TYPE)
+            if (ValueType == ValueType.HEX_TYPE)
             {
                 Length *= 2;
             }
 
-            InitMemoryHandler(_valueType, _compareType, is_alignment, Length);
+            InitMemoryHandler(ValueType, CompareType, Alignment != 1, Length);
+        }
+
+        public void InitNextScanMemoryHandler(CompareType compareType)
+        {
+
+            if (ValueType == ValueType.HEX_TYPE)
+            {
+                Length *= 2;
+            }
+
+            InitMemoryHandler(ValueType, compareType, Alignment != 1, Length);
         }
 
         public void InitMemoryHandler(string valueType, string compareType, bool is_alignment, int type_length = 0)
         {
-            ValueType _valueType = GetValueTypeByString(valueType);
-            CompareType _compareType = GetCompareByString(compareType);
+            ValueType = GetValueTypeByString(valueType);
+            CompareType = GetCompareByString(compareType);
 
-            InitMemoryHandler(_valueType, _compareType, is_alignment, type_length);
+            InitMemoryHandler(ValueType, CompareType, is_alignment, type_length);
         }
 
         public void InitMemoryHandler(ValueType valueType, CompareType compareType, bool is_alignment, int type_length = 0)
         {
+            ValueType = valueType;
+            CompareType = compareType;
+
             switch (valueType)
             {
                 case ValueType.DOUBLE_TYPE:

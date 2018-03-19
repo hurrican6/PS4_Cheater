@@ -37,8 +37,27 @@
 
         private const int VERSION_LIST_DEFAULT = VERSION_LIST_405;
 
-        private string[] SEARCH_BY_FLOAT = new string[]
+        private string[] SEARCH_BY_FLOAT_FIRST = new string[]
         {
+             CONSTANT.EXACT_VALUE,
+             CONSTANT.FUZZY_VALUE,
+             CONSTANT.BIGGER_THAN,
+             CONSTANT.SMALLER_THAN,
+             CONSTANT.BETWEEN_VALUE,
+             CONSTANT.UNKNOWN_INITIAL_VALUE
+        };
+
+        private string[] SEARCH_BY_BYTES_FIRST = new string[]
+        {
+            CONSTANT.EXACT_VALUE,
+            CONSTANT.BIGGER_THAN,
+            CONSTANT.SMALLER_THAN,
+            CONSTANT.BETWEEN_VALUE,
+            CONSTANT.UNKNOWN_INITIAL_VALUE
+        };
+
+        private string[] SEARCH_BY_FLOAT_NEXT = new string[]
+{
              CONSTANT.EXACT_VALUE,
              CONSTANT.FUZZY_VALUE,
              CONSTANT.INCREASED_VALUE,
@@ -50,10 +69,9 @@
              CONSTANT.CHANGED_VALUE,
              CONSTANT.UNCHANGED_VALUE,
              CONSTANT.BETWEEN_VALUE,
-             CONSTANT.UNKNOWN_INITIAL_VALUE
-        };
+};
 
-        private string[] SEARCH_BY_BYTES = new string[]
+        private string[] SEARCH_BY_BYTES_NEXT = new string[]
         {
             CONSTANT.EXACT_VALUE,
             CONSTANT.INCREASED_VALUE,
@@ -65,7 +83,6 @@
             CONSTANT.CHANGED_VALUE,
             CONSTANT.UNCHANGED_VALUE,
             CONSTANT.BETWEEN_VALUE,
-            CONSTANT.UNKNOWN_INITIAL_VALUE
         };
 
         private string[] SEARCH_BY_HEX = new string[]
@@ -142,12 +159,7 @@
             public ulong Results { get; set; }
         }
 
-        class WorkerArgs
-        {
-            public string ValueType { get; set; }
-        }
-
-        private void update_result_list_view(BackgroundWorker worker, string value_type, bool refresh, int start, float percent)
+        private void update_result_list_view(BackgroundWorker worker, bool refresh, int start, float percent)
         {
             worker.ReportProgress(start);
 
@@ -156,6 +168,7 @@
 
             ulong totalResultCount = processManager.TotalResultCount();
             ulong curResultCount = 0;
+            string value_type = MemoryHelper.GetStringOfValueType(memoryHelper.ValueType);
 
             for (int idx = 0; idx < processManager.MappedSectionList.Count; ++idx)
             {
@@ -187,11 +200,11 @@
 
                     lvi.Text = String.Format("{0:X}", memory_address_offset + mapped_section.Start);
 
-
                     if (refresh)
                     {
                         memory_value = memoryHelper.GetBytesByType(memory_address_offset + mapped_section.Start);
                         result_list.Set(memory_value);
+                        worker.ReportProgress(start + (int)(100.0f * curResultCount / 0x1000));
                     }
 
                     lvi.SubItems.Add(value_type);
@@ -237,14 +250,12 @@
                     memoryHelper.InitMemoryHandler((string)valueTypeList.SelectedItem,
                         (string)compareTypeList.SelectedItem, alignment_box.Checked, value_box.Text.Length);
 
-
-                    WorkerArgs args = new WorkerArgs();
-                    args.ValueType = (string)valueTypeList.SelectedItem;
                     setButtons(false);
 
-                    new_scan_worker.RunWorkerAsync(args);
+                    new_scan_worker.RunWorkerAsync();
                     valueTypeList.Enabled = false;
                     new_scan_btn.Text = "New Scan";
+                    InitCompareTypeListOfNextScan();
                 }
                 else if (new_scan_btn.Text == "New Scan")
                 {
@@ -255,6 +266,7 @@
 
                     result_list_view.Items.Clear();
                     processManager.ClearResultList();
+                    InitCompareTypeListOfFirstScan();
                 }
             }
             catch (Exception exception)
@@ -267,10 +279,8 @@
         {
             try
             {
-                WorkerArgs args = new WorkerArgs();
-                args.ValueType = (string)valueTypeList.SelectedItem;
                 setButtons(false);
-                update_result_list_worker.RunWorkerAsync(args);
+                update_result_list_worker.RunWorkerAsync();
             }
             catch (Exception exception)
             {
@@ -282,11 +292,9 @@
         {
             try
             {
-                memoryHelper.InitNextScanMemoryHandler((string)valueTypeList.SelectedItem, (string)compareTypeList.SelectedItem, alignment_box.Checked);
-                WorkerArgs args = new WorkerArgs();
-                args.ValueType = (string)valueTypeList.SelectedItem;
+                memoryHelper.InitNextScanMemoryHandler((string)compareTypeList.SelectedItem);
                 setButtons(false);
-                next_scan_worker.RunWorkerAsync(args);
+                next_scan_worker.RunWorkerAsync();
             }
             catch (Exception exception)
             {
@@ -329,11 +337,6 @@
             msg.Text = ret.Results + " results";
         }
 
-        private void update_result_list_worker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            WorkerArgs args = (WorkerArgs)e.Argument;
-            update_result_list_view(update_result_list_worker, args.ValueType, true, 0, 1.0f);
-        }
         private void next_scan_worker_DoWork(object sender, DoWorkEventArgs e)
         {
             long processed_memory_len = 0;
@@ -349,14 +352,17 @@
                 next_scan_worker.ReportProgress((int)(((float)processed_memory_len / total_memory_size) * 80));
             }
             next_scan_worker.ReportProgress(80);
+            
+            update_result_list_view(next_scan_worker, false, 80, 0.2f);
+        }
 
-            WorkerArgs args = (WorkerArgs)e.Argument;
-            update_result_list_view(next_scan_worker, args.ValueType, false, 80, 0.2f);
+        private void update_result_list_worker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            update_result_list_view(update_result_list_worker, true, 0, 1.0f);
         }
 
         private void new_scan_worker_DoWork(object sender, DoWorkEventArgs e)
         {
-            WorkerArgs args = (WorkerArgs)e.Argument;
             long processed_memory_len = 0;
             ulong total_memory_size = processManager.TotalMemorySize + 1;
             string value_0 = value_box.Text;
@@ -370,7 +376,7 @@
                 new_scan_worker.ReportProgress((int)(((float)processed_memory_len / total_memory_size) * 80));
             }
             new_scan_worker.ReportProgress(80);
-            update_result_list_view(new_scan_worker, args.ValueType, false, 80, 0.2f);
+            update_result_list_view(new_scan_worker, false, 80, 0.2f);
         }
 
         private void new_scan_worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -828,7 +834,7 @@
             }
         }
 
-        private void valueTypeList_SelectedIndexChanged(object sender, EventArgs e)
+        private void InitCompareTypeListOfFirstScan()
         {
             compareTypeList.Items.Clear();
             switch (MemoryHelper.GetValueTypeByString((string)valueTypeList.SelectedItem))
@@ -837,11 +843,11 @@
                 case ValueType.UINT_TYPE:
                 case ValueType.USHORT_TYPE:
                 case ValueType.BYTE_TYPE:
-                    compareTypeList.Items.AddRange(SEARCH_BY_BYTES);
+                    compareTypeList.Items.AddRange(SEARCH_BY_BYTES_FIRST);
                     break;
                 case ValueType.DOUBLE_TYPE:
                 case ValueType.FLOAT_TYPE:
-                    compareTypeList.Items.AddRange(SEARCH_BY_FLOAT);
+                    compareTypeList.Items.AddRange(SEARCH_BY_FLOAT_FIRST);
                     break;
                 case ValueType.HEX_TYPE:
                 case ValueType.STRING_TYPE:
@@ -851,6 +857,36 @@
                     throw new Exception("GetStringOfValueType!!!");
             }
             compareTypeList.SelectedIndex = 0;
+        }
+
+        private void InitCompareTypeListOfNextScan()
+        {
+            compareTypeList.Items.Clear();
+            switch (MemoryHelper.GetValueTypeByString((string)valueTypeList.SelectedItem))
+            {
+                case ValueType.ULONG_TYPE:
+                case ValueType.UINT_TYPE:
+                case ValueType.USHORT_TYPE:
+                case ValueType.BYTE_TYPE:
+                    compareTypeList.Items.AddRange(SEARCH_BY_BYTES_NEXT);
+                    break;
+                case ValueType.DOUBLE_TYPE:
+                case ValueType.FLOAT_TYPE:
+                    compareTypeList.Items.AddRange(SEARCH_BY_FLOAT_NEXT);
+                    break;
+                case ValueType.HEX_TYPE:
+                case ValueType.STRING_TYPE:
+                    compareTypeList.Items.AddRange(SEARCH_BY_HEX);
+                    break;
+                default:
+                    throw new Exception("GetStringOfValueType!!!");
+            }
+            compareTypeList.SelectedIndex = 0;
+        }
+
+        private void valueTypeList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            InitCompareTypeListOfFirstScan();
         }
 
         private void compareList_SelectedIndexChanged(object sender, EventArgs e)

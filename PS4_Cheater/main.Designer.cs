@@ -40,7 +40,6 @@ namespace PS4_Cheater
         private Button next_scan_btn;
         private Button new_scan_btn;
         private Button refresh_btn;
-        private BackgroundWorker update_result_list_worker;
         private BackgroundWorker new_scan_worker;
         private BackgroundWorker next_scan_worker;
         private OpenFileDialog open_file_dialog;
@@ -67,6 +66,13 @@ namespace PS4_Cheater
             this.save_cheat_list_btn = new System.Windows.Forms.Button();
             this.new_cheat_list_btn = new System.Windows.Forms.Button();
             this.cheat_list_view = new System.Windows.Forms.DataGridView();
+            this.cheat_list_view_active = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.cheat_list_view_address = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cheat_list_view_type = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cheat_list_view_value = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cheat_list_view_section = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cheat_list_view_lock = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.cheat_list_view_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.section_list_box = new System.Windows.Forms.CheckedListBox();
             this.section_list_menu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.section_view_menu = new System.Windows.Forms.ToolStripMenuItem();
@@ -102,17 +108,10 @@ namespace PS4_Cheater
             this.next_scan_btn = new System.Windows.Forms.Button();
             this.new_scan_btn = new System.Windows.Forms.Button();
             this.refresh_btn = new System.Windows.Forms.Button();
-            this.update_result_list_worker = new System.ComponentModel.BackgroundWorker();
             this.new_scan_worker = new System.ComponentModel.BackgroundWorker();
             this.next_scan_worker = new System.ComponentModel.BackgroundWorker();
             this.open_file_dialog = new System.Windows.Forms.OpenFileDialog();
-            this.cheat_list_view_active = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.cheat_list_view_address = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cheat_list_view_type = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cheat_list_view_value = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cheat_list_view_section = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.cheat_list_view_lock = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.cheat_list_view_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.update_result_list_worker = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.cheat_list_view)).BeginInit();
             this.section_list_menu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -256,6 +255,50 @@ namespace PS4_Cheater
             this.cheat_list_view.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.cheat_list_view_CellClick);
             this.cheat_list_view.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.cheat_list_view_CellEndEdit);
             this.cheat_list_view.RowsRemoved += new System.Windows.Forms.DataGridViewRowsRemovedEventHandler(this.cheat_list_view_RowsRemoved);
+            // 
+            // cheat_list_view_active
+            // 
+            this.cheat_list_view_active.Frozen = true;
+            this.cheat_list_view_active.HeaderText = "X";
+            this.cheat_list_view_active.Name = "cheat_list_view_active";
+            this.cheat_list_view_active.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.cheat_list_view_active.Text = "X";
+            this.cheat_list_view_active.Width = 15;
+            // 
+            // cheat_list_view_address
+            // 
+            this.cheat_list_view_address.HeaderText = "Address";
+            this.cheat_list_view_address.Name = "cheat_list_view_address";
+            this.cheat_list_view_address.ReadOnly = true;
+            // 
+            // cheat_list_view_type
+            // 
+            this.cheat_list_view_type.HeaderText = "Type";
+            this.cheat_list_view_type.Name = "cheat_list_view_type";
+            this.cheat_list_view_type.ReadOnly = true;
+            // 
+            // cheat_list_view_value
+            // 
+            this.cheat_list_view_value.HeaderText = "Value";
+            this.cheat_list_view_value.Name = "cheat_list_view_value";
+            // 
+            // cheat_list_view_section
+            // 
+            this.cheat_list_view_section.HeaderText = "Section";
+            this.cheat_list_view_section.Name = "cheat_list_view_section";
+            this.cheat_list_view_section.ReadOnly = true;
+            // 
+            // cheat_list_view_lock
+            // 
+            this.cheat_list_view_lock.HeaderText = "Lock";
+            this.cheat_list_view_lock.Name = "cheat_list_view_lock";
+            this.cheat_list_view_lock.Width = 35;
+            // 
+            // cheat_list_view_description
+            // 
+            this.cheat_list_view_description.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.cheat_list_view_description.HeaderText = "Description";
+            this.cheat_list_view_description.Name = "cheat_list_view_description";
             // 
             // section_list_box
             // 
@@ -737,14 +780,6 @@ namespace PS4_Cheater
             this.refresh_btn.UseVisualStyleBackColor = false;
             this.refresh_btn.Click += new System.EventHandler(this.refresh_Click);
             // 
-            // update_result_list_worker
-            // 
-            this.update_result_list_worker.WorkerReportsProgress = true;
-            this.update_result_list_worker.WorkerSupportsCancellation = true;
-            this.update_result_list_worker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.update_result_list_worker_DoWork);
-            this.update_result_list_worker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.update_result_list_worker_ProgressChanged);
-            this.update_result_list_worker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.worker_RunWorkerCompleted);
-            // 
             // new_scan_worker
             // 
             this.new_scan_worker.WorkerReportsProgress = true;
@@ -761,49 +796,13 @@ namespace PS4_Cheater
             this.next_scan_worker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.update_result_list_worker_ProgressChanged);
             this.next_scan_worker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.worker_RunWorkerCompleted);
             // 
-            // cheat_list_view_active
+            // update_result_list_worker
             // 
-            this.cheat_list_view_active.Frozen = true;
-            this.cheat_list_view_active.HeaderText = "X";
-            this.cheat_list_view_active.Name = "cheat_list_view_active";
-            this.cheat_list_view_active.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.cheat_list_view_active.Text = "X";
-            this.cheat_list_view_active.Width = 15;
-            // 
-            // cheat_list_view_address
-            // 
-            this.cheat_list_view_address.HeaderText = "Address";
-            this.cheat_list_view_address.Name = "cheat_list_view_address";
-            this.cheat_list_view_address.ReadOnly = true;
-            // 
-            // cheat_list_view_type
-            // 
-            this.cheat_list_view_type.HeaderText = "Type";
-            this.cheat_list_view_type.Name = "cheat_list_view_type";
-            this.cheat_list_view_type.ReadOnly = true;
-            // 
-            // cheat_list_view_value
-            // 
-            this.cheat_list_view_value.HeaderText = "Value";
-            this.cheat_list_view_value.Name = "cheat_list_view_value";
-            // 
-            // cheat_list_view_section
-            // 
-            this.cheat_list_view_section.HeaderText = "Section";
-            this.cheat_list_view_section.Name = "cheat_list_view_section";
-            this.cheat_list_view_section.ReadOnly = true;
-            // 
-            // cheat_list_view_lock
-            // 
-            this.cheat_list_view_lock.HeaderText = "Lock";
-            this.cheat_list_view_lock.Name = "cheat_list_view_lock";
-            this.cheat_list_view_lock.Width = 35;
-            // 
-            // cheat_list_view_description
-            // 
-            this.cheat_list_view_description.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.cheat_list_view_description.HeaderText = "Description";
-            this.cheat_list_view_description.Name = "cheat_list_view_description";
+            this.update_result_list_worker.WorkerReportsProgress = true;
+            this.update_result_list_worker.WorkerSupportsCancellation = true;
+            this.update_result_list_worker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.update_result_list_worker_DoWork);
+            this.update_result_list_worker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.update_result_list_worker_ProgressChanged);
+            this.update_result_list_worker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.worker_RunWorkerCompleted);
             // 
             // main
             // 
@@ -859,5 +858,6 @@ namespace PS4_Cheater
         private DataGridViewTextBoxColumn cheat_list_view_section;
         private DataGridViewCheckBoxColumn cheat_list_view_lock;
         private DataGridViewTextBoxColumn cheat_list_view_description;
+        private BackgroundWorker update_result_list_worker;
     }
 }
