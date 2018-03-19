@@ -261,6 +261,7 @@
                     setButtons(false);
                     new_scan_btn.Enabled = true;
                     valueTypeList.Enabled = false;
+                    //section_list_box.lo = false;
 
                     new_scan_worker.RunWorkerAsync();
 
@@ -270,6 +271,7 @@
                 else if (new_scan_btn.Text == CONSTANT.NEW_SCAN)
                 {
                     valueTypeList.Enabled = true;
+                    //section_list_box.Enabled = true;
                     refresh_btn.Enabled = false;
                     next_scan_btn.Enabled = false;
                     new_scan_btn.Text = CONSTANT.FIRST_SCAN;
@@ -930,7 +932,7 @@
 
         private void new_scan_worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            new_scan_btn.Text = CONSTANT.FIRST_SCAN;
+            new_scan_btn.Text = CONSTANT.NEW_SCAN;
             if (e.Error != null)
             {
                 msg.Text = e.Error.Message;
