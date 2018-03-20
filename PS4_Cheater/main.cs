@@ -175,7 +175,7 @@
             ulong curResultCount = 0;
             string value_type = MemoryHelper.GetStringOfValueType(memoryHelper.ValueType);
 
-            const int MAX_RESULTS_NUM = 0x10000;
+            const int MAX_RESULTS_NUM = 0x1000;
 
             for (int idx = 0; idx < processManager.MappedSectionList.Count; ++idx)
             {
@@ -1013,10 +1013,10 @@
             if (cheat_list_view.SelectedRows == null)
                 return;
 
-            ListView.SelectedListViewItemCollection items = result_list_view.SelectedItems;
+            DataGridViewSelectedRowCollection items = cheat_list_view.SelectedRows;
             for (int i = 0; i < items.Count; ++i)
             {
-                cheatList[i].Value = cheatList[i].Value;
+                cheatList[items[i].Index].Value = (string)items[i].Cells[CHEAT_LIST_VALUE].Value;
             }
         }
 
@@ -1025,10 +1025,10 @@
             if (cheat_list_view.SelectedRows == null)
                 return;
 
-            ListView.SelectedListViewItemCollection items = result_list_view.SelectedItems;
+            DataGridViewSelectedRowCollection items = cheat_list_view.SelectedRows;
             for (int i = 0; i < items.Count; ++i)
             {
-                cheat_list_view.Rows.RemoveAt(i);
+                cheat_list_view.Rows.Remove(items[i]);
             }
         }
 
@@ -1037,10 +1037,11 @@
             if (cheat_list_view.SelectedRows == null)
                 return;
 
-            ListView.SelectedListViewItemCollection items = result_list_view.SelectedItems;
+            DataGridViewSelectedRowCollection items = cheat_list_view.SelectedRows;
             for (int i = 0; i < items.Count; ++i)
             {
-                cheatList[i].Lock = true;
+                cheatList[items[i].Index].Lock = true;
+                items[i].Cells[CHEAT_LIST_LOCK].Value = true;
             }
         }
 
@@ -1049,13 +1050,13 @@
             if (cheat_list_view.SelectedRows == null)
                 return;
 
-            ListView.SelectedListViewItemCollection items = result_list_view.SelectedItems;
+            DataGridViewSelectedRowCollection items = cheat_list_view.SelectedRows;
             for (int i = 0; i < items.Count; ++i)
             {
-                cheatList[i].Lock = false;
+                cheatList[items[i].Index].Lock = false;
+                items[i].Cells[CHEAT_LIST_LOCK].Value = false;
             }
         }
-
     }
 }
 
