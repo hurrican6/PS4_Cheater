@@ -132,6 +132,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PS4APIWarpper.cs" />
+    <Compile Include="ScanThread.cs" />
     <Compile Include="Util.cs" />
     <EmbeddedResource Include="HexEditor.resx">
       <DependentUpon>HexEditor.cs</DependentUpon>

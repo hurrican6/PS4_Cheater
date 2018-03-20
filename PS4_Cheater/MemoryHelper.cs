@@ -251,9 +251,8 @@ namespace PS4_Cheater
         }
 
         public void CompareWithMemoryBufferNextScanner(byte[] default_value_0, byte[] default_value_1, byte[] buffer,
-            ResultList old_address_list, ResultList new_result_list)
+            ResultList old_result_list, ResultList new_result_list)
         {
-            int alignment = Alignment;
             int length = Length;
 
             if (default_value_0.Length == 0)
@@ -262,11 +261,11 @@ namespace PS4_Cheater
             }
 
             Byte[] new_value = new byte[length];
-            for (old_address_list.Begin(); !old_address_list.End(); old_address_list.Next())
+            for (old_result_list.Begin(); !old_result_list.End(); old_result_list.Next())
             {
                 uint address_offset = 0;
                 Byte[] old_value = null;
-                old_address_list.Get(ref address_offset, ref old_value);
+                old_result_list.Get(ref address_offset, ref old_value);
                 Buffer.BlockCopy(buffer, (int)address_offset, new_value, 0, length);
                 if (Comparer(default_value_0, default_value_1, old_value, new_value))
                 {
@@ -276,7 +275,7 @@ namespace PS4_Cheater
         }
 
         public void CompareWithMemoryBufferNewScanner(byte[] default_value_0, byte[] default_value_1, byte[] buffer,
-            ResultList new_result_list)
+            ResultList new_result_list, uint base_address)
         {
             int alignment = Alignment;
             int length = Length;
@@ -293,7 +292,7 @@ namespace PS4_Cheater
                 Buffer.BlockCopy(buffer, i, new_value, 0, length);
                 if (Comparer(default_value_0, default_value_1, dummy_value, new_value))
                 {
-                    new_result_list.Add((uint)i, new_value);
+                    new_result_list.Add((uint)i + base_address, new_value);
                 }
             }
         }

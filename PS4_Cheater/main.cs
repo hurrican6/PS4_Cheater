@@ -12,6 +12,7 @@
     using System.Runtime.InteropServices;
     using System.Windows.Forms;
     using System.Linq;
+    using System.Threading;
 
     public partial class main : Form
     {
@@ -261,6 +262,7 @@
                     setButtons(false);
                     new_scan_btn.Enabled = true;
                     valueTypeList.Enabled = false;
+                    alignment_box.Enabled = false;
                     //section_list_box.lo = false;
 
                     new_scan_worker.RunWorkerAsync();
@@ -271,6 +273,7 @@
                 else if (new_scan_btn.Text == CONSTANT.NEW_SCAN)
                 {
                     valueTypeList.Enabled = true;
+                    alignment_box.Enabled = true;
                     //section_list_box.Enabled = true;
                     refresh_btn.Enabled = false;
                     next_scan_btn.Enabled = false;
@@ -363,6 +366,50 @@
             }
             msg.Text = ret.Results + " results";
         }
+        
+
+        private void scan_worker_DoWorker(object sender, DoWorkEventArgs e, bool isFirstScan)
+        {
+            BackgroundWorker worker = (BackgroundWorker)sender;
+
+            string value_0 = value_box.Text;
+            string value_1 = value_1_box.Text;
+            worker.ReportProgress(0);
+
+            Mutex scan_wait_mutex = new Mutex();
+            scan_wait_mutex.WaitOne();
+
+            List<byte[]> buffer_queue = new List<byte[]>(CONSTANT.MAX_PEEK_QUEUE);
+
+            Semaphore consumerMutex = new Semaphore(0, CONSTANT.MAX_PEEK_QUEUE);
+            Semaphore producerMutex = new Semaphore(CONSTANT.MAX_PEEK_QUEUE, CONSTANT.MAX_PEEK_QUEUE);
+
+            PeekThread peekThread = new PeekThread(processManager, buffer_queue, consumerMutex, producerMutex);
+            ComparerThread comparer_thread = new ComparerThread(processManager, memoryHelper, buffer_queue,
+                value_0, value_1, worker, consumerMutex, producerMutex, scan_wait_mutex);
+
+            Thread producer = new Thread(peekThread.Peek);
+            producer.Start();
+
+            Thread consumer = null;
+            if (isFirstScan)
+            {
+                consumer = new Thread(comparer_thread.ResultListOfNewScan);
+            }
+            else
+            {
+                consumer = new Thread(comparer_thread.ResultListOfNextScan);
+            }
+            consumer.Start();
+
+            scan_wait_mutex.WaitOne();
+            producer.Abort();
+            consumer.Abort();
+
+            worker.ReportProgress(80);
+
+            update_result_list_view(worker, false, 80, 0.2f);
+        }
 
         private void next_scan_worker_DoWork(object sender, DoWorkEventArgs e)
         {
@@ -380,17 +427,13 @@
                 next_scan_worker.ReportProgress((int)(((float)processed_memory_len / total_memory_size) * 80));
             }
             next_scan_worker.ReportProgress(80);
-            
-            update_result_list_view(next_scan_worker, false, 80, 0.2f);
-        }
 
-        private void update_result_list_worker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            update_result_list_view(update_result_list_worker, true, 0, 1.0f);
+            update_result_list_view(next_scan_worker, false, 80, 0.2f);
         }
 
         private void new_scan_worker_DoWork(object sender, DoWorkEventArgs e)
         {
+            //scan_worker_DoWorker(sender, e, true);
             long processed_memory_len = 0;
             ulong total_memory_size = processManager.TotalMemorySize + 1;
             string value_0 = value_box.Text;
@@ -406,6 +449,11 @@
             }
             new_scan_worker.ReportProgress(80);
             update_result_list_view(new_scan_worker, false, 80, 0.2f);
+        }
+
+        private void update_result_list_worker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            update_result_list_view(update_result_list_worker, true, 0, 1.0f);
         }
 
         private void new_scan_worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -585,23 +633,25 @@
             }
         }
 
+        private void add_to_cheat_list(ListViewItem item)
+        {
+            string address = item.SubItems[RESULT_LIST_ADDRESS].Text;
+            string type = item.SubItems[RESULT_LIST_TYPE].Text;
+            string value = item.SubItems[RESULT_LIST_VALUE].Text;
+            string section = item.SubItems[RESULT_LIST_SECTION].Text;
+            string flag = "0";
+            string description = "";
+
+            new_data_cheat(address, type, value, section, flag, description);
+        }
+
         private void result_list_view_DoubleClick(object sender, EventArgs e)
         {
             if (result_list_view.SelectedItems.Count == 1)
             {
                 ListView.SelectedListViewItemCollection items = result_list_view.SelectedItems;
-
-                ListViewItem lvItem = items[0];
-                string address = lvItem.SubItems[RESULT_LIST_ADDRESS].Text;
-                string type = lvItem.SubItems[RESULT_LIST_TYPE].Text;
-                string value = lvItem.SubItems[RESULT_LIST_VALUE].Text;
-                string section = lvItem.SubItems[RESULT_LIST_SECTION].Text;
-                string flag = "0";
-                string description = "";
-
-                new_data_cheat(address, type, value, section, flag, description);
+                add_to_cheat_list(items[0]);
             }
-
         }
 
         private void cheat_list_view_CellEndEdit(object sender, DataGridViewCellEventArgs e)
@@ -629,30 +679,23 @@
 
         private void cheat_list_view_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            try
-            {
-                if (e.RowIndex < 0) return;
+            if (e.RowIndex < 0) return;
 
-                switch (e.ColumnIndex)
-                {
-                    case CHEAT_LIST_ENABLED:
-                        cheat_list_view.EndEdit();
-                        cheatList[e.RowIndex].Value = cheatList[e.RowIndex].Value;
-                        break;
-                    case CHEAT_LIST_DEL:
-                        cheat_list_view.Rows.RemoveAt(e.RowIndex);
-                        break;
-                    case CHEAT_LIST_LOCK:
-                        cheat_list_view.EndEdit();
-                        DataGridViewRow edited_row = cheat_list_view.Rows[e.RowIndex];
-                        object edited_col = edited_row.Cells[e.ColumnIndex].Value;
-                        cheatList[e.RowIndex].Lock = (bool)edited_col;
-                        break;
-                }
-            }
-            catch (Exception exception)
+            switch (e.ColumnIndex)
             {
-                MessageBox.Show(exception.Message);
+                case CHEAT_LIST_ENABLED:
+                    cheat_list_view.EndEdit();
+                    cheatList[e.RowIndex].Value = cheatList[e.RowIndex].Value;
+                    break;
+                case CHEAT_LIST_DEL:
+                    cheat_list_view.Rows.RemoveAt(e.RowIndex);
+                    break;
+                case CHEAT_LIST_LOCK:
+                    cheat_list_view.EndEdit();
+                    DataGridViewRow edited_row = cheat_list_view.Rows[e.RowIndex];
+                    object edited_col = edited_row.Cells[e.ColumnIndex].Value;
+                    cheatList[e.RowIndex].Lock = (bool)edited_col;
+                    break;
             }
         }
 
@@ -691,20 +734,13 @@
 
         private void save_address_btn_Click(object sender, EventArgs e)
         {
-            try
-            {
-                save_file_dialog.Filter = "Cheat files (*.cht)|*.cht";
-                save_file_dialog.FilterIndex = 1;
-                save_file_dialog.RestoreDirectory = true;
+            save_file_dialog.Filter = "Cheat files (*.cht)|*.cht";
+            save_file_dialog.FilterIndex = 1;
+            save_file_dialog.RestoreDirectory = true;
 
-                if (save_file_dialog.ShowDialog() == DialogResult.OK)
-                {
-                    cheatList.SaveFile(save_file_dialog.FileName, (string)processes_comboBox.SelectedItem, processManager);
-                }
-            }
-            catch (Exception exception)
+            if (save_file_dialog.ShowDialog() == DialogResult.OK)
             {
-                MessageBox.Show(exception.Message);
+                cheatList.SaveFile(save_file_dialog.FileName, (string)processes_comboBox.SelectedItem, processManager);
             }
         }
 
@@ -959,6 +995,67 @@
             }
             setButtons(true);
         }
+
+        private void result_list_view_add_to_cheat_list_Click(object sender, EventArgs e)
+        {
+            if (result_list_view.SelectedItems == null)
+                return;
+
+            ListView.SelectedListViewItemCollection items = result_list_view.SelectedItems;
+            for (int i = 0; i < items.Count; ++i)
+            {
+                add_to_cheat_list(items[i]);
+            }
+        }
+
+        private void cheat_list_item_active_Click(object sender, EventArgs e)
+        {
+            if (cheat_list_view.SelectedRows == null)
+                return;
+
+            ListView.SelectedListViewItemCollection items = result_list_view.SelectedItems;
+            for (int i = 0; i < items.Count; ++i)
+            {
+                cheatList[i].Value = cheatList[i].Value;
+            }
+        }
+
+        private void cheat_list_item_delete_Click(object sender, EventArgs e)
+        {
+            if (cheat_list_view.SelectedRows == null)
+                return;
+
+            ListView.SelectedListViewItemCollection items = result_list_view.SelectedItems;
+            for (int i = 0; i < items.Count; ++i)
+            {
+                cheat_list_view.Rows.RemoveAt(i);
+            }
+        }
+
+        private void cheat_list_item_lock_Click(object sender, EventArgs e)
+        {
+            if (cheat_list_view.SelectedRows == null)
+                return;
+
+            ListView.SelectedListViewItemCollection items = result_list_view.SelectedItems;
+            for (int i = 0; i < items.Count; ++i)
+            {
+                cheatList[i].Lock = true;
+            }
+        }
+
+        private void cheat_list_time_unlock_Click(object sender, EventArgs e)
+        {
+            if (cheat_list_view.SelectedRows == null)
+                return;
+
+            ListView.SelectedListViewItemCollection items = result_list_view.SelectedItems;
+            for (int i = 0; i < items.Count; ++i)
+            {
+                cheatList[i].Lock = false;
+            }
+        }
+
     }
 }
 

@@ -211,6 +211,7 @@ namespace PS4_Cheater
             ResultList new_result_list = new ResultList(memoryHelper.Length, memoryHelper.Alignment);
 
             ulong address = this.Start;
+            uint base_address = 0;
             int length = this.Length;
 
             const int buffer_length = 1024 * 1024 * 128;
@@ -236,13 +237,14 @@ namespace PS4_Cheater
 
                 if (newScan)
                 {
-                    memoryHelper.CompareWithMemoryBufferNewScanner(default_value_0, default_value_1, buffer, new_result_list);
+                    memoryHelper.CompareWithMemoryBufferNewScanner(default_value_0, default_value_1, buffer, new_result_list, base_address);
                 }
                 else
                 {
                     memoryHelper.CompareWithMemoryBufferNextScanner(default_value_0, default_value_1, buffer, ResultList, new_result_list);
                 }
                 address += (ulong)cur_length;
+                base_address += (uint)cur_length;
             }
             ResultList = new_result_list;
         }

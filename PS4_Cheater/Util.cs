@@ -58,6 +58,9 @@ namespace PS4_Cheater
              CONSTANT.BYTE_STRING_TYPE,
              CONSTANT.BYTE_HEX_TYPE,
         };
+
+        public const int MAX_PEEK_QUEUE = 4;
+        public const int PEEK_BUFFER_LENGTH = 32 * 1024 * 1024;
     }
 
     class Util
