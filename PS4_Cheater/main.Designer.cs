@@ -57,8 +57,8 @@ namespace PS4_Cheater
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.parent = new System.Windows.Forms.Panel();
             this.result_list_view_value = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.result_list_view_section = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -77,10 +77,12 @@ namespace PS4_Cheater
             this.cheat_list_view_lock = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.cheat_list_view_description = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.cheat_list_menu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.chaet_list_item_hex_view = new System.Windows.Forms.ToolStripMenuItem();
+            this.cheat_list_item_separator_1 = new System.Windows.Forms.ToolStripSeparator();
             this.cheat_list_item_lock = new System.Windows.Forms.ToolStripMenuItem();
-            this.cheat_list_time_unlock = new System.Windows.Forms.ToolStripMenuItem();
+            this.cheat_list_item_unlock = new System.Windows.Forms.ToolStripMenuItem();
             this.cheat_list_item_active = new System.Windows.Forms.ToolStripMenuItem();
-            this.cheat_list_item_separator = new System.Windows.Forms.ToolStripSeparator();
+            this.cheat_list_item_separator_0 = new System.Windows.Forms.ToolStripSeparator();
             this.cheat_list_item_delete = new System.Windows.Forms.ToolStripMenuItem();
             this.section_list_box = new System.Windows.Forms.CheckedListBox();
             this.section_list_menu = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -274,9 +276,9 @@ namespace PS4_Cheater
             // 
             // cheat_list_view_del
             // 
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle3.NullValue = "Delete";
-            this.cheat_list_view_del.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.NullValue = "Delete";
+            this.cheat_list_view_del.DefaultCellStyle = dataGridViewCellStyle1;
             this.cheat_list_view_del.HeaderText = "Delete";
             this.cheat_list_view_del.Name = "cheat_list_view_del";
             this.cheat_list_view_del.Width = 50;
@@ -297,9 +299,9 @@ namespace PS4_Cheater
             // 
             // cheat_list_view_active
             // 
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle4.NullValue = "X";
-            this.cheat_list_view_active.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.NullValue = "X";
+            this.cheat_list_view_active.DefaultCellStyle = dataGridViewCellStyle2;
             this.cheat_list_view_active.HeaderText = "X";
             this.cheat_list_view_active.Name = "cheat_list_view_active";
             this.cheat_list_view_active.Resizable = System.Windows.Forms.DataGridViewTriState.False;
@@ -335,44 +337,58 @@ namespace PS4_Cheater
             // cheat_list_menu
             // 
             this.cheat_list_menu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.chaet_list_item_hex_view,
+            this.cheat_list_item_separator_1,
             this.cheat_list_item_lock,
-            this.cheat_list_time_unlock,
+            this.cheat_list_item_unlock,
             this.cheat_list_item_active,
-            this.cheat_list_item_separator,
+            this.cheat_list_item_separator_0,
             this.cheat_list_item_delete});
             this.cheat_list_menu.Name = "cheat_list_menu";
-            this.cheat_list_menu.Size = new System.Drawing.Size(112, 98);
+            this.cheat_list_menu.Size = new System.Drawing.Size(153, 148);
+            // 
+            // chaet_list_item_hex_view
+            // 
+            this.chaet_list_item_hex_view.Name = "chaet_list_item_hex_view";
+            this.chaet_list_item_hex_view.Size = new System.Drawing.Size(152, 22);
+            this.chaet_list_item_hex_view.Text = "Hex Editor";
+            this.chaet_list_item_hex_view.Click += new System.EventHandler(this.chaet_list_item_hex_view_Click);
+            // 
+            // cheat_list_item_separator_1
+            // 
+            this.cheat_list_item_separator_1.Name = "cheat_list_item_separator_1";
+            this.cheat_list_item_separator_1.Size = new System.Drawing.Size(149, 6);
             // 
             // cheat_list_item_lock
             // 
             this.cheat_list_item_lock.Name = "cheat_list_item_lock";
-            this.cheat_list_item_lock.Size = new System.Drawing.Size(111, 22);
+            this.cheat_list_item_lock.Size = new System.Drawing.Size(152, 22);
             this.cheat_list_item_lock.Text = "Lock";
             this.cheat_list_item_lock.Click += new System.EventHandler(this.cheat_list_item_lock_Click);
             // 
-            // cheat_list_time_unlock
+            // cheat_list_item_unlock
             // 
-            this.cheat_list_time_unlock.Name = "cheat_list_time_unlock";
-            this.cheat_list_time_unlock.Size = new System.Drawing.Size(111, 22);
-            this.cheat_list_time_unlock.Text = "Unlock";
-            this.cheat_list_time_unlock.Click += new System.EventHandler(this.cheat_list_time_unlock_Click);
+            this.cheat_list_item_unlock.Name = "cheat_list_item_unlock";
+            this.cheat_list_item_unlock.Size = new System.Drawing.Size(152, 22);
+            this.cheat_list_item_unlock.Text = "Unlock";
+            this.cheat_list_item_unlock.Click += new System.EventHandler(this.cheat_list_time_unlock_Click);
             // 
             // cheat_list_item_active
             // 
             this.cheat_list_item_active.Name = "cheat_list_item_active";
-            this.cheat_list_item_active.Size = new System.Drawing.Size(111, 22);
+            this.cheat_list_item_active.Size = new System.Drawing.Size(152, 22);
             this.cheat_list_item_active.Text = "Active";
             this.cheat_list_item_active.Click += new System.EventHandler(this.cheat_list_item_active_Click);
             // 
-            // cheat_list_item_separator
+            // cheat_list_item_separator_0
             // 
-            this.cheat_list_item_separator.Name = "cheat_list_item_separator";
-            this.cheat_list_item_separator.Size = new System.Drawing.Size(108, 6);
+            this.cheat_list_item_separator_0.Name = "cheat_list_item_separator_0";
+            this.cheat_list_item_separator_0.Size = new System.Drawing.Size(149, 6);
             // 
             // cheat_list_item_delete
             // 
             this.cheat_list_item_delete.Name = "cheat_list_item_delete";
-            this.cheat_list_item_delete.Size = new System.Drawing.Size(111, 22);
+            this.cheat_list_item_delete.Size = new System.Drawing.Size(152, 22);
             this.cheat_list_item_delete.Text = "Delete";
             this.cheat_list_item_delete.Click += new System.EventHandler(this.cheat_list_item_delete_Click);
             // 
@@ -531,7 +547,7 @@ namespace PS4_Cheater
             this.result_list_view_view_item.Name = "result_list_view_view_item";
             this.result_list_view_view_item.Size = new System.Drawing.Size(165, 22);
             this.result_list_view_view_item.Text = "Hex Editor";
-            this.result_list_view_view_item.Click += new System.EventHandler(this.view_item_Click);
+            this.result_list_view_view_item.Click += new System.EventHandler(this.result_list_view_hex_item_Click);
             // 
             // result_list_view_dump_item
             // 
@@ -752,7 +768,7 @@ namespace PS4_Cheater
             this.select_all.TabIndex = 8;
             this.select_all.Text = "Select All";
             this.select_all.UseVisualStyleBackColor = true;
-            this.select_all.Click += new System.EventHandler(this.selectAll_CheckBox_Click);
+            this.select_all.Click += new System.EventHandler(this.select_all_check_box_Click);
             // 
             // progressBar
             // 
@@ -952,8 +968,10 @@ namespace PS4_Cheater
         private ContextMenuStrip cheat_list_menu;
         private ToolStripMenuItem cheat_list_item_lock;
         private ToolStripMenuItem cheat_list_item_active;
-        private ToolStripSeparator cheat_list_item_separator;
+        private ToolStripSeparator cheat_list_item_separator_0;
         private ToolStripMenuItem cheat_list_item_delete;
-        private ToolStripMenuItem cheat_list_time_unlock;
+        private ToolStripMenuItem cheat_list_item_unlock;
+        private ToolStripSeparator cheat_list_item_separator_1;
+        private ToolStripMenuItem chaet_list_item_hex_view;
     }
 }

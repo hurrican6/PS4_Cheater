@@ -22,6 +22,7 @@ namespace PS4_Cheater
         private int page;
         private int page_count;
         private long line;
+        private int column;
 
         const int page_size = 8 * 1024 * 1024;
 
@@ -33,6 +34,7 @@ namespace PS4_Cheater
             this.section = section;
             this.page = offset / page_size;
             this.line = (offset - page * page_size) / hexBox.BytesPerLine;
+            this.column = (offset - page * page_size) % hexBox.BytesPerLine;
 
             this.page_count = divup((int)section.Length, page_size);
 
@@ -60,10 +62,9 @@ namespace PS4_Cheater
 
             if (line != 0)
             {
-                hexBox.SelectionStart = line * hexBox.BytesPerLine;
-                hexBox.SelectionLength = 0;
-                hexBox.Focus();
-                //hexBox.ScrollToCaret();
+                hexBox.SelectionStart = line * hexBox.BytesPerLine + column;
+                hexBox.SelectionLength = 4;
+                hexBox.ScrollByteIntoView((line + hexBox.Height / (int)hexBox.CharSize.Height - 1) * hexBox.BytesPerLine + column);
             }
         }
 
@@ -91,6 +92,7 @@ namespace PS4_Cheater
 
             page++;
             line = 0;
+            column = 0;
 
             page_list.SelectedIndex = page;
         }
@@ -104,6 +106,7 @@ namespace PS4_Cheater
 
             page--;
             line = 0;
+            column = 0;
             page_list.SelectedIndex = page;
         }
 
@@ -136,6 +139,7 @@ namespace PS4_Cheater
         {
             page_list.SelectedIndex = page;
             line = hexBox.CurrentLine - 1;
+            column = 0;
             update_ui(page, line);
         }
     }

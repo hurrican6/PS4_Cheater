@@ -347,7 +347,7 @@
             }
         }
 
-        private void selectAll_CheckBox_Click(object sender, EventArgs e)
+        private void select_all_check_box_Click(object sender, EventArgs e)
         {
             bool check = select_all.Checked;
             set_section_list_box(check);
@@ -516,7 +516,7 @@
             }
         }
 
-        private void view_item_Click(object sender, EventArgs e)
+        private void result_list_view_hex_item_Click(object sender, EventArgs e)
         {
             if (result_list_view.SelectedItems.Count == 1)
             {
@@ -1055,6 +1055,30 @@
             {
                 cheatList[items[i].Index].Lock = false;
                 items[i].Cells[CHEAT_LIST_LOCK].Value = false;
+            }
+        }
+
+        private void chaet_list_item_hex_view_Click(object sender, EventArgs e)
+        {
+            if (cheat_list_view.SelectedRows == null) return;
+
+            if (cheat_list_view.SelectedRows.Count == 1)
+            {
+                DataGridViewSelectedRowCollection items = cheat_list_view.SelectedRows;
+
+                ulong address = ulong.Parse((string)cheat_list_view.Rows[0].Cells[CHEAT_LIST_ADDRESS].Value, NumberStyles.HexNumber);
+                int sectionID = processManager.GetMappedSectionID(address);
+
+                if (sectionID >= 0)
+                {
+                    int offset = 0;
+
+                    MappedSection section = processManager.MappedSectionList[sectionID];
+
+                    offset = (int)(address - section.Start);
+                    HexEditor hexEdit = new HexEditor(memoryHelper, offset, section);
+                    hexEdit.Show(this);
+                }
             }
         }
     }
