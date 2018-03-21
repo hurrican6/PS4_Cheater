@@ -1066,7 +1066,7 @@
             {
                 DataGridViewSelectedRowCollection items = cheat_list_view.SelectedRows;
 
-                ulong address = ulong.Parse((string)cheat_list_view.Rows[0].Cells[CHEAT_LIST_ADDRESS].Value, NumberStyles.HexNumber);
+                ulong address = ulong.Parse((string)items[0].Cells[CHEAT_LIST_ADDRESS].Value, NumberStyles.HexNumber);
                 int sectionID = processManager.GetMappedSectionID(address);
 
                 if (sectionID >= 0)
