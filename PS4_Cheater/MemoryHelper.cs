@@ -887,10 +887,10 @@ namespace PS4_Cheater
                     switch (valueType)
                     {
                         case ValueType.DOUBLE_TYPE:
-                            Comparer = scan_type_equal_double;
+                            Comparer = scan_type_fuzzy_equal_double;
                             break;
                         case ValueType.FLOAT_TYPE:
-                            Comparer = scan_type_equal_float;
+                            Comparer = scan_type_fuzzy_equal_float;
                             break;
                         default:
                             break;
