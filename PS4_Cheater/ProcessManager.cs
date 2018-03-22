@@ -232,8 +232,17 @@ namespace PS4_Cheater
 
                 byte[] buffer = MemoryHelper.ReadMemory(address, (int)cur_length);
 
-                byte[] default_value_0 = memoryHelper.StringToBytes(default_value_0_str);
-                byte[] default_value_1 = memoryHelper.StringToBytes(default_value_1_str);
+                byte[] default_value_0 = null;
+                if (memoryHelper.ParseFirstValue)
+                {
+                    default_value_0 = memoryHelper.StringToBytes(default_value_0_str);
+                }
+
+                byte[] default_value_1 = null;
+                if (memoryHelper.ParseSecondValue)
+                {
+                    default_value_1 = memoryHelper.StringToBytes(default_value_1_str);
+                }
 
                 if (newScan)
                 {
@@ -243,6 +252,7 @@ namespace PS4_Cheater
                 {
                     memoryHelper.CompareWithMemoryBufferNextScanner(default_value_0, default_value_1, buffer, ResultList, new_result_list);
                 }
+
                 address += (ulong)cur_length;
                 base_address += (uint)cur_length;
             }

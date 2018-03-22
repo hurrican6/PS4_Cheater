@@ -71,6 +71,9 @@ namespace PS4_Cheater
         public ValueType ValueType { get; set; }
         public CompareType CompareType { get; set; }
 
+        public bool ParseFirstValue { get; set; }
+        public bool ParseSecondValue { get; set; }
+
         public static byte[] ReadMemory(ulong address, int length)
         {
             mutex.WaitOne();
@@ -255,11 +258,6 @@ namespace PS4_Cheater
         {
             int length = Length;
 
-            if (default_value_0.Length == 0)
-            {
-                return;
-            }
-
             Byte[] new_value = new byte[length];
             for (old_result_list.Begin(); !old_result_list.End(); old_result_list.Next())
             {
@@ -280,11 +278,6 @@ namespace PS4_Cheater
             int alignment = Alignment;
             int length = Length;
 
-            if (default_value_0.Length == 0)
-            {
-                return;
-            }
-
             Byte[] new_value = new byte[length];
             Byte[] dummy_value = new byte[length];
             for (int i = 0; i + length < buffer.LongLength; i += alignment)
@@ -297,17 +290,22 @@ namespace PS4_Cheater
             }
         }
 
-        [DllImport("msvcrt.dll")]
-        private static extern IntPtr memcmp(byte[] b1, byte[] b2, IntPtr count);
-
         public bool scan_type_equal_hex(Byte[] default_value_0, Byte[] default_value_1, Byte[] old_value, Byte[] new_value)
         {
             if (default_value_0.Length != new_value.Length)
             {
                 throw new ArgumentException("Length!!!");
             }
-            IntPtr retval = memcmp(default_value_0, new_value, new IntPtr(new_value.Length));
-            return retval.ToInt64() == 0;
+
+            for (int i = 0; i < default_value_0.Length; ++i)
+            {
+                if (default_value_0[i] != new_value[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public bool scan_type_equal_string(Byte[] default_value_0, Byte[] default_value_1, Byte[] old_value, Byte[] new_value)
@@ -316,8 +314,15 @@ namespace PS4_Cheater
             {
                 throw new ArgumentException("Length!!!");
             }
-            IntPtr retval = memcmp(default_value_0, new_value, new IntPtr(new_value.Length));
-            return retval.ToInt64() == 0;
+
+            for (int i = 0; i < default_value_0.Length; ++i)
+            {
+                if (default_value_0[i] != new_value[i])
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         bool scan_type_any_ulong(Byte[] default_value_0, Byte[] default_value_1, Byte[] old_value, Byte[] new_value)
@@ -882,6 +887,8 @@ namespace PS4_Cheater
                         default:
                             break;
                     }
+                    ParseFirstValue = false;
+                    ParseSecondValue = false;
                     break;
                 case CompareType.FUZZY_VALUE:
                     switch (valueType)
@@ -895,6 +902,8 @@ namespace PS4_Cheater
                         default:
                             break;
                     }
+                    ParseFirstValue = true;
+                    ParseSecondValue = false;
                     break;
                 case CompareType.EXACT_VALUE:
                     switch (valueType)
@@ -926,6 +935,8 @@ namespace PS4_Cheater
                         default:
                             break;
                     }
+                    ParseFirstValue = true;
+                    ParseSecondValue = false;
                     break;
                 case CompareType.CHANGED_VALUE:
                     switch (valueType)
@@ -951,6 +962,8 @@ namespace PS4_Cheater
                         default:
                             break;
                     }
+                    ParseFirstValue = true;
+                    ParseSecondValue = false;
                     break;
                 case CompareType.UNCHANGED_VALUE:
                     switch (valueType)
@@ -976,6 +989,8 @@ namespace PS4_Cheater
                         default:
                             break;
                     }
+                    ParseFirstValue = true;
+                    ParseSecondValue = false;
                     break;
                 case CompareType.INCREASED_VALUE:
                     switch (valueType)
@@ -1001,6 +1016,8 @@ namespace PS4_Cheater
                         default:
                             break;
                     }
+                    ParseFirstValue = false;
+                    ParseSecondValue = false;
                     break;
                 case CompareType.INCREASED_VALUE_BY:
                     switch (valueType)
@@ -1026,6 +1043,8 @@ namespace PS4_Cheater
                         default:
                             break;
                     }
+                    ParseFirstValue = true;
+                    ParseSecondValue = false;
                     break;
                 case CompareType.DECREASED_VALUE:
                     switch (valueType)
@@ -1051,6 +1070,8 @@ namespace PS4_Cheater
                         default:
                             break;
                     }
+                    ParseFirstValue = false;
+                    ParseSecondValue = false;
                     break;
                 case CompareType.DECREASED_VALUE_BY:
                     switch (valueType)
@@ -1076,6 +1097,8 @@ namespace PS4_Cheater
                         default:
                             break;
                     }
+                    ParseFirstValue = true;
+                    ParseSecondValue = false;
                     break;
                 case CompareType.BIGGER_THAN_VALUE:
                     switch (valueType)
@@ -1101,6 +1124,8 @@ namespace PS4_Cheater
                         default:
                             break;
                     }
+                    ParseFirstValue = true;
+                    ParseSecondValue = false;
                     break;
                 case CompareType.SMALLER_THAN_VALUE:
                     switch (valueType)
@@ -1126,6 +1151,8 @@ namespace PS4_Cheater
                         default:
                             break;
                     }
+                    ParseFirstValue = true;
+                    ParseSecondValue = false;
                     break;
                 case CompareType.BETWEEN_VALUE:
                     switch (valueType)
@@ -1151,6 +1178,8 @@ namespace PS4_Cheater
                         default:
                             break;
                     }
+                    ParseFirstValue = true;
+                    ParseSecondValue = true;
                     break;
                 default:
                     break;

@@ -268,7 +268,6 @@
                     new_scan_worker.RunWorkerAsync();
 
                     new_scan_btn.Text = CONSTANT.STOP;
-                    InitCompareTypeListOfNextScan();
                 }
                 else if (new_scan_btn.Text == CONSTANT.NEW_SCAN)
                 {
@@ -895,6 +894,7 @@
 
         private void InitCompareTypeListOfFirstScan()
         {
+            string selected_type = (string)compareTypeList.SelectedItem;
             compareTypeList.Items.Clear();
             switch (MemoryHelper.GetValueTypeByString((string)valueTypeList.SelectedItem))
             {
@@ -915,11 +915,24 @@
                 default:
                     throw new Exception("GetStringOfValueType!!!");
             }
-            compareTypeList.SelectedIndex = 0;
+
+            int list_idx = 0;
+            int list_count = compareTypeList.Items.Count;
+
+            for (; list_idx < list_count; ++list_idx)
+            {
+                if ((string)compareTypeList.Items[list_idx] == selected_type)
+                {
+                    break;
+                }
+            }
+
+            compareTypeList.SelectedIndex = list_idx == list_count ? 0 : list_idx;
         }
 
         private void InitCompareTypeListOfNextScan()
         {
+            string selected_type = (string)compareTypeList.SelectedItem;
             compareTypeList.Items.Clear();
             switch (MemoryHelper.GetValueTypeByString((string)valueTypeList.SelectedItem))
             {
@@ -940,7 +953,19 @@
                 default:
                     throw new Exception("GetStringOfValueType!!!");
             }
-            compareTypeList.SelectedIndex = 0;
+
+            int list_idx = 0;
+            int list_count = compareTypeList.Items.Count;
+
+            for (; list_idx < list_count; ++list_idx)
+            {
+                if ((string)compareTypeList.Items[list_idx] == selected_type)
+                {
+                    break;
+                }
+            }
+
+            compareTypeList.SelectedIndex = list_idx == list_count ? 0 : list_idx;
         }
 
         private void valueTypeList_SelectedIndexChanged(object sender, EventArgs e)
@@ -969,6 +994,7 @@
         private void new_scan_worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             new_scan_btn.Text = CONSTANT.NEW_SCAN;
+            InitCompareTypeListOfNextScan();
             if (e.Error != null)
             {
                 msg.Text = e.Error.Message;
