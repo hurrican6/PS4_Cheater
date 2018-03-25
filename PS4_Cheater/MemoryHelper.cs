@@ -87,7 +87,7 @@ namespace PS4_Cheater
             {
                 mutex.ReleaseMutex();
             }
-            return new byte[1];
+            return new byte[length];
         }
 
         public static void WriteMemory(ulong address, byte[] data)
