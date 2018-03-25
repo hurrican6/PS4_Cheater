@@ -15,8 +15,8 @@ namespace PS4_Cheater
         public const uint SECTION_EXECUTABLE = 0x5;
 
         public const uint MAJOR_VERSION = 1;
-        public const uint SECONDARY_VERSION = 3;
-        public const uint THIRD_VERSION = 3;
+        public const uint SECONDARY_VERSION = 4;
+        public const uint THIRD_VERSION = 0;
 
         public const string EXACT_VALUE = "Exact Value";
         public const string FUZZY_VALUE = "Fuzzy Value";
@@ -40,6 +40,7 @@ namespace PS4_Cheater
         public const string BYTE_DOUBLE_TYPE = "double";
         public const string BYTE_STRING_TYPE = "string";
         public const string BYTE_HEX_TYPE = "hex";
+        public const string BYTE_POINTER = "pointer";
 
         public const string STOP = "Stop";
         public const string FIRST_SCAN = "First Scan";

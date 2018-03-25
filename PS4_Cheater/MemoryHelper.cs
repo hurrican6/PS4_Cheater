@@ -5,6 +5,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using librpc;
 using System.Threading;
+using System.Globalization;
+using System.Collections;
 
 namespace PS4_Cheater
 {
@@ -22,6 +24,7 @@ namespace PS4_Cheater
         UNCHANGED_VALUE,
         BETWEEN_VALUE,
         UNKNOWN_INITIAL_VALUE,
+        POINTER_VALUE,
         NONE,
     }
 
@@ -35,6 +38,7 @@ namespace PS4_Cheater
         DOUBLE_TYPE,
         STRING_TYPE,
         HEX_TYPE,
+        POINTER_TYPE,
         NONE_TYPE,
     }
 
@@ -51,8 +55,38 @@ namespace PS4_Cheater
 
         public static bool Connect(string ip)
         {
-            ps4 = new PS4RPC(ip);
-            ps4.Connect();
+            try
+            {
+                mutex.WaitOne();
+                ps4 = new PS4RPC(ip);
+                ps4.Connect();
+                mutex.ReleaseMutex();
+                return true;
+            }
+            catch
+            {
+                mutex.ReleaseMutex();
+            }
+            return false;
+        }
+
+        public static bool Disconnect()
+        {
+
+            try
+            {
+                mutex.WaitOne();
+                if (ps4 != null)
+                {
+                    ps4.Disconnect();
+                }
+                mutex.ReleaseMutex();
+                return true;
+            }
+            catch
+            {
+                mutex.ReleaseMutex();
+            }
             return false;
         }
 
@@ -63,6 +97,7 @@ namespace PS4_Cheater
         public BytesToStringHandler BytesToString { get; set; }
         public BytesToStringHandler BytesToHexString { get; set; }
         public StringToBytesHandler StringToBytes { get; set; }
+        public StringToBytesHandler HexStringToBytes { get; set; }
         public ComparatorHandler Comparer { get; set; }
 
         public int Length { get; set; }
@@ -136,100 +171,101 @@ namespace PS4_Cheater
             }
         }
 
-        public static string hex_to_string(byte[] bytes)
+        static string hex_to_string(byte[] bytes)
         {
             return BitConverter.ToString(bytes).Replace("-", "");
         }
 
-        public static string string_to_string(Byte[] value)
+        static string string_to_string(Byte[] value)
         {
             return System.Text.Encoding.Default.GetString(value);
         }
 
-        public static string double_to_string(Byte[] value)
+        static string double_to_string(Byte[] value)
         {
             return BitConverter.ToDouble(value, 0).ToString();
         }
-        public static string float_to_string(Byte[] value)
+        static string float_to_string(Byte[] value)
         {
             return BitConverter.ToSingle(value, 0).ToString();
         }
-        public static string ulong_to_string(Byte[] value)
+        static string ulong_to_string(Byte[] value)
         {
             return BitConverter.ToUInt64(value, 0).ToString();
         }
-        public static string uint_to_string(Byte[] value)
+        static string uint_to_string(Byte[] value)
         {
             return BitConverter.ToUInt32(value, 0).ToString();
         }
-        public static string uint16_to_string(Byte[] value)
+        static string uint16_to_string(Byte[] value)
         {
             return BitConverter.ToUInt16(value, 0).ToString();
         }
-        public static string uchar_to_string(Byte[] value)
+        static string uchar_to_string(Byte[] value)
         {
             return value[0].ToString();
         }
-        public static string double_to_hex_string(Byte[] value)
+        static string double_to_hex_string(Byte[] value)
         {
             return BitConverter.ToUInt64(value, 0).ToString("X16");
         }
-        public static string float_to_hex_string(Byte[] value)
+        static string float_to_hex_string(Byte[] value)
         {
             return BitConverter.ToUInt32(value, 0).ToString("X8");
         }
-        public static string ulong_to_hex_string(Byte[] value)
+        static string ulong_to_hex_string(Byte[] value)
         {
             return BitConverter.ToUInt64(value, 0).ToString("X16");
         }
-        public static string uint_to_hex_string(Byte[] value)
+        static string uint_to_hex_string(Byte[] value)
         {
             return BitConverter.ToUInt32(value, 0).ToString("X8");
         }
-        public static string uint16_to_hex_string(Byte[] value)
+        static string uint16_to_hex_string(Byte[] value)
         {
             return BitConverter.ToUInt16(value, 0).ToString("X4");
         }
-        public static string uchar_to_hex_string(Byte[] value)
+        static string uchar_to_hex_string(Byte[] value)
         {
             return value[0].ToString("X2");
         }
-        public static string hex_to_hex_string(byte[] bytes)
+        static string hex_to_hex_string(byte[] bytes)
         {
             return BitConverter.ToString(bytes).Replace("-", "");
         }
-        public static string string_to_hex_string(Byte[] value)
+
+        static string string_to_hex_string(Byte[] value)
         {
             return BitConverter.ToString(value).Replace("-", "");
         }
 
-        public static byte[] string_to_double(string value)
+        static byte[] string_to_double(string value)
         {
             return BitConverter.GetBytes(double.Parse(value));
         }
-        public static byte[] string_to_float(string value)
+        static byte[] string_to_float(string value)
         {
             return BitConverter.GetBytes(float.Parse(value));
         }
-        public static byte[] string_to_8_bytes(string value)
+        static byte[] string_to_8_bytes(string value)
         {
             return BitConverter.GetBytes(ulong.Parse(value));
         }
 
-        public static byte[] string_to_4_bytes(string value)
+        static byte[] string_to_4_bytes(string value)
         {
             return BitConverter.GetBytes(uint.Parse(value));
         }
 
-        public static byte[] string_to_2_bytes(string value)
+        static byte[] string_to_2_bytes(string value)
         {
             return BitConverter.GetBytes(UInt16.Parse(value));
         }
-        public static byte[] string_to_1_byte(string value)
+        static byte[] string_to_byte(string value)
         {
             return BitConverter.GetBytes(Byte.Parse(value));
         }
-        public static byte[] string_to_hex_bytes(string hexString)
+        static byte[] string_to_hex_bytes(string hexString)
         {
             byte[] returnBytes = new byte[hexString.Length / 2];
             for (int i = 0; i < returnBytes.Length; i++)
@@ -237,10 +273,37 @@ namespace PS4_Cheater
             return returnBytes;
         }
 
-        public static byte[] string_to_string_bytes(string hexString)
+        static byte[] string_to_string_bytes(string hexString)
         {
             byte[] buffer = System.Text.Encoding.Default.GetBytes(hexString);
             return buffer;
+        }
+
+        static byte[] hex_string_to_double(string value)
+        {
+            return BitConverter.GetBytes(double.Parse(value, NumberStyles.HexNumber));
+        }
+        static byte[] hex_string_to_float(string value)
+        {
+            return BitConverter.GetBytes(float.Parse(value, NumberStyles.HexNumber));
+        }
+        static byte[] hex_string_to_8_bytes(string value)
+        {
+            return BitConverter.GetBytes(ulong.Parse(value, NumberStyles.HexNumber));
+        }
+
+        static byte[] hex_string_to_4_bytes(string value)
+        {
+            return BitConverter.GetBytes(uint.Parse(value, NumberStyles.HexNumber));
+        }
+
+        static byte[] hex_string_to_2_bytes(string value)
+        {
+            return BitConverter.GetBytes(UInt16.Parse(value, NumberStyles.HexNumber));
+        }
+        static byte[] hex_string_to_byte(string value)
+        {
+            return BitConverter.GetBytes(Byte.Parse(value, NumberStyles.HexNumber));
         }
 
         public byte[] GetBytesByType(ulong address)
@@ -289,6 +352,57 @@ namespace PS4_Cheater
                 }
             }
         }
+        public static int BinarySearch(List<MappedSection> sections, int low, int high, ulong address)
+        {
+            int mid = (low + high) / 2;
+            if (low > high)
+                return -1;
+            else
+            {
+                if ((sections[mid].Start <= address) && (sections[mid].Start + (ulong)(sections[mid].Length)>= address))
+                    return mid;
+                else if (sections[mid].Start > address)
+                    return BinarySearch(sections, low, mid - 1, address);
+                else
+                    return BinarySearch(sections, mid + 1, high, address);
+            }
+        }
+
+        private int IsInSection(List<MappedSection> sections, ulong address)
+        {
+            ulong start = 0;
+            ulong end = 0;
+
+            if (sections.Count > 0)
+            {
+                start = sections[0].Start;
+                end = sections[sections.Count - 1].Start + (ulong)sections[sections.Count - 1].Length;
+            }
+
+            if (start > address || end < address)
+            {
+                return -1;
+            }
+
+            return BinarySearch(sections, 0, sections.Count - 1, address);
+        }
+
+        public void CompareWithMemoryBufferPointerScanner(List<MappedSection> sections, byte[] buffer,
+            PointerList pointerList, ulong base_address)
+        {
+            Byte[] address_buf = new byte[8];
+            for (int i = 0; i + 8 < buffer.LongLength; i += 4)
+            {
+                Buffer.BlockCopy(buffer, i, address_buf, 0, 8);
+                ulong address = BitConverter.ToUInt64(address_buf, 0);
+                int sectionID = IsInSection(sections, address);
+                if (sectionID != -1)
+                {
+                    Pointer pointer = new Pointer(base_address + (ulong)i, address);
+                    pointerList.Add(pointer);
+                }
+            }
+        }
 
         public bool scan_type_equal_hex(Byte[] default_value_0, Byte[] default_value_1, Byte[] old_value, Byte[] new_value)
         {
@@ -308,7 +422,7 @@ namespace PS4_Cheater
             return true;
         }
 
-        public bool scan_type_equal_string(Byte[] default_value_0, Byte[] default_value_1, Byte[] old_value, Byte[] new_value)
+        bool scan_type_equal_string(Byte[] default_value_0, Byte[] default_value_1, Byte[] old_value, Byte[] new_value)
         {
             if (default_value_0.Length != new_value.Length)
             {
@@ -323,6 +437,11 @@ namespace PS4_Cheater
                 }
             }
             return true;
+        }
+
+        bool scan_type_pointer_ulong(Byte[] default_value_0, Byte[] default_value_1, Byte[] old_value, Byte[] new_value)
+        {
+            return BitConverter.ToUInt64(new_value, 0) != 0 ? true : false;
         }
 
         bool scan_type_any_ulong(Byte[] default_value_0, Byte[] default_value_1, Byte[] old_value, Byte[] new_value)
@@ -700,6 +819,9 @@ namespace PS4_Cheater
                 case CONSTANT.BYTE_STRING_TYPE:
                     _valueType = ValueType.STRING_TYPE;
                     break;
+                case CONSTANT.BYTE_POINTER:
+                    _valueType = ValueType.POINTER_TYPE;
+                    break;
                 default:
                     throw new Exception("GetValueTypeByString!!!");
             }
@@ -726,6 +848,8 @@ namespace PS4_Cheater
                     return CONSTANT.BYTE_HEX_TYPE;
                 case ValueType.STRING_TYPE:
                     return CONSTANT.BYTE_STRING_TYPE;
+                case ValueType.POINTER_TYPE:
+                    return CONSTANT.BYTE_POINTER;
                 default:
                     throw new Exception("GetStringOfValueType!!!");
             }
@@ -805,6 +929,7 @@ namespace PS4_Cheater
                     BytesToString = double_to_string;
                     BytesToHexString = double_to_hex_string;
                     StringToBytes = string_to_double;
+                    HexStringToBytes = hex_string_to_double;
                     Length = sizeof(double);
                     Alignment = (is_alignment) ? 4 : 1;
                     break;
@@ -812,6 +937,7 @@ namespace PS4_Cheater
                     BytesToString = float_to_string;
                     BytesToHexString = float_to_hex_string;
                     StringToBytes = string_to_float;
+                    HexStringToBytes = hex_string_to_float;
                     Length = sizeof(float);
                     Alignment = (is_alignment) ? 4 : 1;
                     break;
@@ -819,6 +945,7 @@ namespace PS4_Cheater
                     BytesToString = ulong_to_string;
                     BytesToHexString = ulong_to_hex_string;
                     StringToBytes = string_to_8_bytes;
+                    HexStringToBytes = hex_string_to_8_bytes;
                     Length = sizeof(ulong);
                     Alignment = (is_alignment) ? 4 : 1;
                     break;
@@ -826,6 +953,7 @@ namespace PS4_Cheater
                     BytesToString = uint_to_string;
                     BytesToHexString = uint_to_hex_string;
                     StringToBytes = string_to_4_bytes;
+                    HexStringToBytes = hex_string_to_4_bytes;
                     Length = sizeof(uint);
                     Alignment = (is_alignment) ? 4 : 1;
                     break;
@@ -833,13 +961,15 @@ namespace PS4_Cheater
                     BytesToString = uint16_to_string;
                     BytesToHexString = uint16_to_hex_string;
                     StringToBytes = string_to_2_bytes;
+                    HexStringToBytes = hex_string_to_2_bytes;
                     Length = sizeof(ushort);
                     Alignment = (is_alignment) ? 2 : 1;
                     break;
                 case ValueType.BYTE_TYPE:
                     BytesToString = uchar_to_string;
                     BytesToHexString = uchar_to_hex_string;
-                    StringToBytes = string_to_1_byte;
+                    StringToBytes = string_to_byte;
+                    HexStringToBytes = hex_string_to_byte;
                     Length = sizeof(byte);
                     Alignment = 1;
                     break;
@@ -847,6 +977,7 @@ namespace PS4_Cheater
                     BytesToString = hex_to_string;
                     BytesToHexString = hex_to_hex_string;
                     StringToBytes = string_to_hex_bytes;
+                    HexStringToBytes = null;
                     Alignment = 1;
                     Length = type_length / 2;
                     break;
@@ -854,6 +985,7 @@ namespace PS4_Cheater
                     BytesToString = string_to_string;
                     BytesToHexString = string_to_hex_string;
                     StringToBytes = string_to_string_bytes;
+                    HexStringToBytes = null;
                     Alignment = 1;
                     Length = type_length;
                     break;
@@ -1180,6 +1312,18 @@ namespace PS4_Cheater
                     }
                     ParseFirstValue = true;
                     ParseSecondValue = true;
+                    break;
+                case CompareType.POINTER_VALUE:
+                    switch (valueType)
+                    {
+                        case ValueType.ULONG_TYPE:
+                            Comparer = scan_type_between_ulong;
+                            break;
+                        default:
+                            throw new Exception("Pointer Type!!!");
+                    }
+                    ParseFirstValue = false;
+                    ParseSecondValue = false;
                     break;
                 default:
                     break;

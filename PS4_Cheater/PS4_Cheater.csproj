@@ -128,6 +128,12 @@
     <Compile Include="NewAddress.Designer.cs">
       <DependentUpon>NewAddress.cs</DependentUpon>
     </Compile>
+    <Compile Include="PointerFinder.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PointerFinder.Designer.cs">
+      <DependentUpon>PointerFinder.cs</DependentUpon>
+    </Compile>
     <Compile Include="ProcessManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -142,6 +148,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="NewAddress.resx">
       <DependentUpon>NewAddress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PointerFinder.resx">
+      <DependentUpon>PointerFinder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

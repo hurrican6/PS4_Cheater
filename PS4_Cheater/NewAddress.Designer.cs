@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.label1 = new System.Windows.Forms.Label();
             this.address_box = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -37,8 +38,10 @@
             this.save_btn = new System.Windows.Forms.Button();
             this.description_box = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.cancell_btn = new System.Windows.Forms.Button();
+            this.cancel_btn = new System.Windows.Forms.Button();
             this.lock_box = new System.Windows.Forms.CheckBox();
+            this.pointer_box = new System.Windows.Forms.CheckBox();
+            this.PointerCheckerPointer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // label1
@@ -74,7 +77,6 @@
             this.type_box.Name = "type_box";
             this.type_box.Size = new System.Drawing.Size(121, 20);
             this.type_box.TabIndex = 3;
-            this.type_box.SelectedIndexChanged += new System.EventHandler(this.type_box_SelectedIndexChanged);
             // 
             // value_box
             // 
@@ -95,9 +97,10 @@
             // 
             // save_btn
             // 
-            this.save_btn.Location = new System.Drawing.Point(41, 107);
+            this.save_btn.DialogResult = System.Windows.Forms.DialogResult.OK;
+            this.save_btn.Location = new System.Drawing.Point(40, 110);
             this.save_btn.Name = "save_btn";
-            this.save_btn.Size = new System.Drawing.Size(121, 23);
+            this.save_btn.Size = new System.Drawing.Size(121, 25);
             this.save_btn.TabIndex = 10;
             this.save_btn.Text = "Save";
             this.save_btn.UseVisualStyleBackColor = true;
@@ -119,16 +122,16 @@
             this.label3.TabIndex = 11;
             this.label3.Text = "Description";
             // 
-            // cancell_btn
+            // cancel_btn
             // 
-            this.cancell_btn.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancell_btn.Location = new System.Drawing.Point(240, 107);
-            this.cancell_btn.Name = "cancell_btn";
-            this.cancell_btn.Size = new System.Drawing.Size(123, 23);
-            this.cancell_btn.TabIndex = 13;
-            this.cancell_btn.Text = "Close";
-            this.cancell_btn.UseVisualStyleBackColor = true;
-            this.cancell_btn.Click += new System.EventHandler(this.cancell_btn_Click);
+            this.cancel_btn.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.cancel_btn.Location = new System.Drawing.Point(240, 110);
+            this.cancel_btn.Name = "cancel_btn";
+            this.cancel_btn.Size = new System.Drawing.Size(123, 25);
+            this.cancel_btn.TabIndex = 13;
+            this.cancel_btn.Text = "Close";
+            this.cancel_btn.UseVisualStyleBackColor = true;
+            this.cancel_btn.Click += new System.EventHandler(this.cancel_btn_Click);
             // 
             // lock_box
             // 
@@ -137,19 +140,38 @@
             this.lock_box.Name = "lock_box";
             this.lock_box.Size = new System.Drawing.Size(48, 16);
             this.lock_box.TabIndex = 15;
-            this.lock_box.Text = "lock";
+            this.lock_box.Text = "Lock";
             this.lock_box.UseVisualStyleBackColor = true;
+            // 
+            // pointer_box
+            // 
+            this.pointer_box.AutoSize = true;
+            this.pointer_box.Location = new System.Drawing.Point(78, 92);
+            this.pointer_box.Name = "pointer_box";
+            this.pointer_box.Size = new System.Drawing.Size(66, 16);
+            this.pointer_box.TabIndex = 16;
+            this.pointer_box.Text = "Pointer";
+            this.pointer_box.UseVisualStyleBackColor = true;
+            this.pointer_box.CheckedChanged += new System.EventHandler(this.pointer_box_CheckedChanged);
+            // 
+            // PointerCheckerPointer
+            // 
+            this.PointerCheckerPointer.Enabled = true;
+            this.PointerCheckerPointer.Interval = 500;
+            this.PointerCheckerPointer.Tick += new System.EventHandler(this.PointerCheckerPointer_Tick);
             // 
             // NewAddress
             // 
             this.AcceptButton = this.save_btn;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.CancelButton = this.cancell_btn;
-            this.ClientSize = new System.Drawing.Size(399, 142);
+            this.AutoScroll = true;
+            this.CancelButton = this.cancel_btn;
+            this.ClientSize = new System.Drawing.Size(398, 140);
             this.ControlBox = false;
+            this.Controls.Add(this.pointer_box);
             this.Controls.Add(this.lock_box);
-            this.Controls.Add(this.cancell_btn);
+            this.Controls.Add(this.cancel_btn);
             this.Controls.Add(this.description_box);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.save_btn);
@@ -184,7 +206,9 @@
         private System.Windows.Forms.Button save_btn;
         private System.Windows.Forms.TextBox description_box;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Button cancell_btn;
+        private System.Windows.Forms.Button cancel_btn;
         private System.Windows.Forms.CheckBox lock_box;
+        private System.Windows.Forms.CheckBox pointer_box;
+        private System.Windows.Forms.Timer PointerCheckerPointer;
     }
 }
