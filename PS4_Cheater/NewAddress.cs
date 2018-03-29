@@ -21,11 +21,11 @@ namespace PS4_Cheater
 
         private ProcessManager ProcessManager = null;
 
-        public NewAddress(MemoryHelper MemoryHelper, ProcessManager ProcessManager)
+        public NewAddress(ProcessManager ProcessManager)
         {
             InitializeComponent();
 
-            this.MemoryHelper = MemoryHelper;
+            this.MemoryHelper = new MemoryHelper();
             this.ProcessManager = ProcessManager;
         }
 
