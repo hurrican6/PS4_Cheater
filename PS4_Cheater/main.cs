@@ -744,7 +744,7 @@
 
         private void add_address_btn_Click(object sender, EventArgs e)
         {
-            NewAddress newAddress = new NewAddress(memoryHelper, processManager);
+            NewAddress newAddress = new NewAddress(processManager);
             if (newAddress.ShowDialog() != DialogResult.OK)
                 return;
 
