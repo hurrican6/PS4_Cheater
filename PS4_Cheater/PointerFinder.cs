@@ -17,12 +17,12 @@ namespace PS4_Cheater
         private ulong address = 0;
         private DataGridView cheatList;
 
-        public PointerFinder(ulong address, ProcessManager processManager, MemoryHelper memoryHelper, DataGridView cheat_list_view)
+        public PointerFinder(ulong address, ProcessManager processManager, DataGridView cheat_list_view)
         {
             this.address = address;
             this.cheatList = cheat_list_view;
             this.processManager = processManager;
-            this.memoryHelper = memoryHelper;
+            this.memoryHelper = new MemoryHelper();
 
             InitializeComponent();
         }

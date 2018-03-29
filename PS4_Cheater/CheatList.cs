@@ -659,7 +659,7 @@ namespace PS4_Cheater
             save_buf += "data|";
             save_buf += ((AddressCheatOperator)Destination).DumpOldFormat();
             save_buf += Source.Dump(true);
-            save_buf += Lock ? "1" : "0" + "|";
+            save_buf += (Lock ? "1" : "0") + "|";
             save_buf += Description + "|";
             save_buf += Destination.ToString() + "\n";
             return save_buf;
@@ -732,7 +732,7 @@ namespace PS4_Cheater
             save_buf += Destination.Dump(true) + "|";
             save_buf += "data|";
             save_buf += Source.Dump(true);
-            save_buf += Lock ? "1" : "0" + "|";
+            save_buf += (Lock ? "1" : "0") + "|";
             save_buf += Description + "|";
             save_buf += "\n";
             return save_buf;
