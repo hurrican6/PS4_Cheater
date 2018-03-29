@@ -181,6 +181,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.address_box);
             this.Controls.Add(this.label1);
+            this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -190,6 +191,8 @@
             this.Text = "NewAddress";
             this.TopMost = true;
             this.Load += new System.EventHandler(this.NewAddress_Load);
+            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.NewAddress_MouseDown);
+            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.NewAddress_MouseMove);
             this.ResumeLayout(false);
             this.PerformLayout();
 
