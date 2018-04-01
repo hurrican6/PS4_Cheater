@@ -142,5 +142,13 @@ namespace PS4_Cheater
             column = 0;
             update_ui(page, line);
         }
+
+        private void find_Click(object sender, EventArgs e)
+        {
+            FindOptions findOptions = new FindOptions();
+            findOptions.Type = FindType.Hex;
+            findOptions.Hex = MemoryHelper.string_to_hex_bytes(input_box.Text);
+            hexBox.Find(findOptions);
+        }
     }
 }

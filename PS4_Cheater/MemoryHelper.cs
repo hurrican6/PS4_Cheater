@@ -265,7 +265,7 @@ namespace PS4_Cheater
         {
             return BitConverter.GetBytes(Byte.Parse(value));
         }
-        static byte[] string_to_hex_bytes(string hexString)
+        public static byte[] string_to_hex_bytes(string hexString)
         {
             byte[] returnBytes = new byte[hexString.Length / 2];
             for (int i = 0; i < returnBytes.Length; i++)
@@ -352,50 +352,16 @@ namespace PS4_Cheater
                 }
             }
         }
-        public static int BinarySearch(List<MappedSection> sections, int low, int high, ulong address)
-        {
-            int mid = (low + high) / 2;
-            if (low > high)
-                return -1;
-            else
-            {
-                if ((sections[mid].Start <= address) && (sections[mid].Start + (ulong)(sections[mid].Length)>= address))
-                    return mid;
-                else if (sections[mid].Start > address)
-                    return BinarySearch(sections, low, mid - 1, address);
-                else
-                    return BinarySearch(sections, mid + 1, high, address);
-            }
-        }
 
-        private int IsInSection(List<MappedSection> sections, ulong address)
-        {
-            ulong start = 0;
-            ulong end = 0;
-
-            if (sections.Count > 0)
-            {
-                start = sections[0].Start;
-                end = sections[sections.Count - 1].Start + (ulong)sections[sections.Count - 1].Length;
-            }
-
-            if (start > address || end < address)
-            {
-                return -1;
-            }
-
-            return BinarySearch(sections, 0, sections.Count - 1, address);
-        }
-
-        public void CompareWithMemoryBufferPointerScanner(List<MappedSection> sections, byte[] buffer,
+        public void CompareWithMemoryBufferPointerScanner(ProcessManager processManager, byte[] buffer,
             PointerList pointerList, ulong base_address)
         {
             Byte[] address_buf = new byte[8];
-            for (int i = 0; i + 8 < buffer.LongLength; i += 4)
+            for (int i = 0; i + 8 < buffer.LongLength; i += 8)
             {
                 Buffer.BlockCopy(buffer, i, address_buf, 0, 8);
                 ulong address = BitConverter.ToUInt64(address_buf, 0);
-                int sectionID = IsInSection(sections, address);
+                int sectionID = processManager.GetMappedSectionID(address);
                 if (sectionID != -1)
                 {
                     Pointer pointer = new Pointer(base_address + (ulong)i, address);

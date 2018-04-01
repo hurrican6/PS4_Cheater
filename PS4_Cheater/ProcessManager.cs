@@ -61,7 +61,7 @@ namespace PS4_Cheater
             pointer_list_order_by_pointer_value = new List<Pointer>();
         }
 
-        public delegate void NewPathGeneratedHandler(PointerList pointerList, List<ulong> path_offset, List<Pointer> path_address);
+        public delegate void NewPathGeneratedHandler(PointerList pointerList, List<long> path_offset, List<Pointer> path_address);
 
         public event NewPathGeneratedHandler NewPathGeneratedEvent;
 
@@ -178,11 +178,17 @@ namespace PS4_Cheater
                 }
             }
 
+            bool find = false;
             for (int i = start; i < pointer_list_order_by_pointer_value.Count; ++i)
             {
                 if (pointer_list_order_by_pointer_value[i].PointerValue == pointerValue)
                 {
+                    find = true;
                     pointerList.Add(pointer_list_order_by_pointer_value[i]);
+                }
+                else
+                {
+                    if (find) break;
                 }
             }
 
@@ -198,7 +204,7 @@ namespace PS4_Cheater
             return index;
         }
 
-        private void PointerFinder(List<ulong> path_offset, List<Pointer> path_address,
+        private void PointerFinder(List<long> path_offset, List<Pointer> path_address,
             ulong address, List<int> range, int level, ref bool changed)
         {
 
@@ -214,59 +220,72 @@ namespace PS4_Cheater
                 return;
             }
 
-            Pointer position = new Pointer();
-            int index  = GetPointerByAddress(address, ref position);
-
             bool local_changed = false;
-
-            for (int i = index; i >= 0; i--)
+            if ((level + 1) < range.Count)
             {
-                if (Stop)
+
+                Pointer position = new Pointer();
+                int index = GetPointerByAddress(address, ref position);
+                int counter = 0;
+
+                for (int i = index; i >= 0; i--)
                 {
-                    break;
-                }
-
-                if ((long)pointer_list_order_by_address[i].Address + range[0] < (long)address)
-                {
-                    break;
-                }
-
-                List<Pointer> pointerList = GetPointerListByValue(pointer_list_order_by_address[i].Address);
-
-                if (pointerList.Count > 0)
-                {
-                    path_offset.Add(address - pointer_list_order_by_address[i].Address);
-
-                    for (int j = 0; j < pointerList.Count; ++j)
+                    if (Stop)
                     {
-                        bool in_stack = false;
-                        for (int k = 0; k <path_address.Count; ++k)
-                        {
-                            if (path_address[k].PointerValue == pointerList[j].PointerValue ||
-                                path_address[k].Address == pointerList[j].Address)
-                            {
-                                in_stack = true;
-                                break;
-                            }
-                        }
-                        if (in_stack)
-                        {
-                            continue;
-                        }
-
-                        bool sub_changed = false;
-
-                        path_address.Add(pointerList[j]);
-                        PointerFinder(path_offset, path_address, pointerList[j].Address, range, level + 1, ref sub_changed);
-                        path_address.RemoveAt(path_address.Count - 1);
-
-                        local_changed |= sub_changed;
+                        break;
                     }
 
-                    path_offset.RemoveAt(path_offset.Count - 1);
+                    if ((long)pointer_list_order_by_address[i].Address + range[0] < (long)address)
+                    {
+                        break;
+                    }
 
-                    break;
+                    List<Pointer> pointerList = GetPointerListByValue(pointer_list_order_by_address[i].Address);
+
+                    if (pointerList.Count > 0)
+                    {
+                        path_offset.Add((long)(address - pointer_list_order_by_address[i].Address));
+
+                        for (int j = 0; j < pointerList.Count; ++j)
+                        {
+                            bool in_stack = false;
+                            for (int k = 0; k < path_address.Count; ++k)
+                            {
+                                if (path_address[k].PointerValue == pointerList[j].PointerValue ||
+                                    path_address[k].Address == pointerList[j].Address)
+                                {
+                                    in_stack = true;
+                                    break;
+                                }
+                            }
+                            if (in_stack)
+                            {
+                                continue;
+                            }
+
+                            bool sub_changed = false;
+
+                            path_address.Add(pointerList[j]);
+                            PointerFinder(path_offset, path_address, pointerList[j].Address, range, level + 1, ref sub_changed);
+                            path_address.RemoveAt(path_address.Count - 1);
+
+                            local_changed |= sub_changed;
+                        }
+
+                        path_offset.RemoveAt(path_offset.Count - 1);
+
+                        if (counter > 1)
+                        {
+                            break;
+                        }
+                    }
+
+                    ++counter;
                 }
+            }
+            else
+            {
+                local_changed = true;
             }
 
             if (Stop)
@@ -324,7 +343,7 @@ namespace PS4_Cheater
 
         public void FindPointerList(ulong address, List<int> range)
         {
-            List<ulong> path_offset = new List<ulong>();
+            List<long> path_offset = new List<long>();
             List<Pointer> path_address = new List<Pointer>();
             bool changed = true;
             PointerFinder(path_offset, path_address, address, range, 0, ref changed);
@@ -517,15 +536,10 @@ namespace PS4_Cheater
         public uint Prot { get; set; }
 
         public ResultList ResultList { get; set; }
-
-        Hashtable address2value;
-        Hashtable value2address;
+        
 
         public MappedSection()
         {
-            value2address = new Hashtable();
-            address2value = new Hashtable();
-
             ResultList = null;
         }
 
@@ -626,7 +640,7 @@ namespace PS4_Cheater
 
                 byte[] buffer = MemoryHelper.ReadMemory(address, (int)cur_length);
 
-                memoryHelper.CompareWithMemoryBufferPointerScanner(processManager.MappedSectionList, buffer, pointerList, address);
+                memoryHelper.CompareWithMemoryBufferPointerScanner(processManager, buffer, pointerList, address);
 
                 address += (ulong)cur_length;
             }
@@ -654,18 +668,39 @@ public class ProcessManager
             return MappedSectionList.Count;
         }
 
+        private int BinarySearch(int low, int high, ulong address)
+        {
+            int mid = (low + high) / 2;
+            if (low > high)
+                return -1;
+            else
+            {
+                if ((MappedSectionList[mid].Start <= address) && (MappedSectionList[mid].Start + (ulong)(MappedSectionList[mid].Length) >= address))
+                    return mid;
+                else if (MappedSectionList[mid].Start > address)
+                    return BinarySearch(low, mid - 1, address);
+                else
+                    return BinarySearch(mid + 1, high, address);
+            }
+        }
+
         public int GetMappedSectionID(ulong address)
         {
-            for (int i = 0; i < MappedSectionList.Count; ++i)
+            ulong start = 0;
+            ulong end = 0;
+
+            if (MappedSectionList.Count > 0)
             {
-                MappedSection sectionInfo = MappedSectionList[i];
-                if (sectionInfo.Start <= address && (sectionInfo.Start + (ulong)sectionInfo.Length) >= address)
-                {
-                    return i;
-                }
+                start = MappedSectionList[0].Start;
+                end = MappedSectionList[MappedSectionList.Count - 1].Start + (ulong)MappedSectionList[MappedSectionList.Count - 1].Length;
             }
 
-            return -1;
+            if (start > address || end < address)
+            {
+                return -1;
+            }
+
+            return BinarySearch(0, MappedSectionList.Count - 1, address);
         }
 
         public MappedSection GetMappedSection(ulong address)

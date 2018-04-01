@@ -630,7 +630,7 @@
             }
         }
 
-        void new_pointer_cheat(ulong address, List<long> offset_list, string type, string data, bool lock_, string description)
+        public void new_pointer_cheat(ulong address, List<long> offset_list, string type, string data, bool lock_, string description)
         {
             try
             {
@@ -819,6 +819,7 @@
                 }
             }
         }
+
         private void refresh_cheat_list_Click(object sender, EventArgs e)
         {
             try
@@ -927,10 +928,10 @@
                 }
 
                 this.send_pay_load(this.ip_box.Text, patch_path + @"payload.bin", Convert.ToInt32(this.port_box.Text));
-                System.Threading.Thread.Sleep(1000);
+                Thread.Sleep(1000);
                 this.msg.Text = "Injecting kpayload.elf...";
                 this.send_pay_load(this.ip_box.Text, patch_path + @"kpayload.elf", 9023);
-                System.Threading.Thread.Sleep(1000);
+                Thread.Sleep(1000);
                 this.msg.ForeColor = Color.Green;
                 this.msg.Text = "Payload injected successfully!";
             }
@@ -1032,14 +1033,14 @@
                 value_1_box.Visible = true;
                 value_label.Visible = true;
                 and_label.Visible = true;
-                value_box.Width = 112;
+                value_box.Width = 102;
             }
             else
             {
                 value_1_box.Visible = false;
                 value_label.Visible = false;
                 and_label.Visible = false;
-                value_box.Width = 274;
+                value_box.Width = 235;
             }
         }
 
@@ -1174,8 +1175,9 @@
             DataGridViewSelectedRowCollection items = cheat_list_view.SelectedRows;
 
             ulong address = ulong.Parse((string)items[0].Cells[CHEAT_LIST_ADDRESS].Value, NumberStyles.HexNumber);
+            string type = (string)items[0].Cells[CHEAT_LIST_TYPE].Value;
 
-            PointerFinder pointerFinder = new PointerFinder(address, processManager, cheat_list_view);
+            PointerFinder pointerFinder = new PointerFinder(this, address, type, processManager, cheat_list_view);
             pointerFinder.Show();
         }
     }

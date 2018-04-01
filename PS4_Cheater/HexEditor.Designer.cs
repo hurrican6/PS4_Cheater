@@ -37,6 +37,8 @@
             this.commit_btn = new System.Windows.Forms.Button();
             this.next_btn = new System.Windows.Forms.Button();
             this.page_list = new System.Windows.Forms.ComboBox();
+            this.find = new System.Windows.Forms.Button();
+            this.input_box = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -55,6 +57,8 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.input_box);
+            this.splitContainer1.Panel2.Controls.Add(this.find);
             this.splitContainer1.Panel2.Controls.Add(this.refresh_btn);
             this.splitContainer1.Panel2.Controls.Add(this.previous_btn);
             this.splitContainer1.Panel2.Controls.Add(this.commit_btn);
@@ -139,6 +143,23 @@
             this.page_list.TabIndex = 14;
             this.page_list.SelectedIndexChanged += new System.EventHandler(this.page_list_SelectedIndexChanged);
             // 
+            // find
+            // 
+            this.find.Location = new System.Drawing.Point(15, 327);
+            this.find.Name = "find";
+            this.find.Size = new System.Drawing.Size(160, 23);
+            this.find.TabIndex = 17;
+            this.find.Text = "Find";
+            this.find.UseVisualStyleBackColor = true;
+            this.find.Click += new System.EventHandler(this.find_Click);
+            // 
+            // input_box
+            // 
+            this.input_box.Location = new System.Drawing.Point(15, 281);
+            this.input_box.Name = "input_box";
+            this.input_box.Size = new System.Drawing.Size(160, 21);
+            this.input_box.TabIndex = 18;
+            // 
             // HexEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -152,6 +173,7 @@
             this.Load += new System.EventHandler(this.HexEdit_Load);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
+            this.splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -166,5 +188,7 @@
         private Button commit_btn;
         private Button next_btn;
         private ComboBox page_list;
+        private TextBox input_box;
+        private Button find;
     }
 }
