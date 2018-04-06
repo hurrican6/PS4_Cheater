@@ -17,7 +17,7 @@
     public partial class main : Form
     {
         private ProcessManager processManager = new ProcessManager();
-        private MemoryHelper memoryHelper = new MemoryHelper();
+        private MemoryHelper memoryHelper = new MemoryHelper(true, 0);
         private CheatList cheatList = new CheatList();
 
         private const int CHEAT_LIST_DEL = 0;
@@ -108,13 +108,16 @@
             if (version == "4.05")
             {
                 version_list.SelectedIndex = VERSION_LIST_405;
+                Util.Version = 405;
             }
             else if (version == "4.55")
             {
+                Util.Version = 455;
                 version_list.SelectedIndex = VERSION_LIST_455;
             }
             else
             {
+                Util.Version = 405;
                 version_list.SelectedIndex = VERSION_LIST_DEFAULT;
             }
 
@@ -173,7 +176,7 @@
             List<ListViewItem> listViewItems = new List<ListViewItem>();
             bool[] mappedSectionCheckeSet = new bool[processManager.MappedSectionList.Count];
 
-            ulong totalResultCount = processManager.TotalResultCount();
+            ulong totalResultCount = processManager.MappedSectionList.TotalResultCount();
             ulong curResultCount = 0;
             string value_type = MemoryHelper.GetStringOfValueType(memoryHelper.ValueType);
 
@@ -221,7 +224,7 @@
                     lvi.SubItems.Add(value_type);
                     lvi.SubItems.Add(memoryHelper.BytesToString(memory_value));
                     lvi.SubItems.Add(memoryHelper.BytesToHexString(memory_value));
-                    lvi.SubItems.Add(processManager.GetSectionName(idx));
+                    lvi.SubItems.Add(processManager.MappedSectionList.GetSectionName(idx));
 
                     listViewItems.Add(lvi);
                 }
@@ -253,7 +256,7 @@
             {
                 if (new_scan_btn.Text == CONSTANT.FIRST_SCAN)
                 {
-                    if (MessageBox.Show("search size:" + (processManager.TotalMemorySize / 1024).ToString() + "KB") != DialogResult.OK)
+                    if (MessageBox.Show("search size:" + (processManager.MappedSectionList.TotalMemorySize / 1024).ToString() + "KB") != DialogResult.OK)
                     {
                         return;
                     }
@@ -281,7 +284,7 @@
                     new_scan_btn.Text = CONSTANT.FIRST_SCAN;
 
                     result_list_view.Items.Clear();
-                    processManager.ClearResultList();
+                    processManager.MappedSectionList.ClearResultList();
                     InitCompareTypeListOfFirstScan();
                 }
                 else if (new_scan_btn.Text == CONSTANT.STOP)
@@ -415,7 +418,7 @@
         private void next_scan_worker_DoWork(object sender, DoWorkEventArgs e)
         {
             long processed_memory_len = 0;
-            ulong total_memory_size = processManager.TotalMemorySize + 1;
+            ulong total_memory_size = processManager.MappedSectionList.TotalMemorySize + 1;
             string value_0 = value_box.Text;
             string value_1 = value_1_box.Text;
             next_scan_worker.ReportProgress(0);
@@ -436,7 +439,7 @@
         {
             //scan_worker_DoWorker(sender, e, true);
             long processed_memory_len = 0;
-            ulong total_memory_size = processManager.TotalMemorySize + 1;
+            ulong total_memory_size = processManager.MappedSectionList.TotalMemorySize + 1;
             string value_0 = value_box.Text;
             string value_1 = value_1_box.Text;
             new_scan_worker.ReportProgress(0);
@@ -508,7 +511,7 @@
 
                 if (save_file_dialog.ShowDialog() == DialogResult.OK)
                 {
-                    byte[] buffer = MemoryHelper.ReadMemory(section.Start, (int)section.Length);
+                    byte[] buffer = memoryHelper.ReadMemory(section.Start, (int)section.Length);
 
                     FileStream myStream = new FileStream(save_file_dialog.FileName, FileMode.OpenOrCreate);
                     myStream.Write(buffer, 0, buffer.Length);
@@ -525,7 +528,7 @@
 
                 ulong address = ulong.Parse(result_list_view.SelectedItems[0].
                     SubItems[RESULT_LIST_ADDRESS].Text, NumberStyles.HexNumber);
-                int sectionID = processManager.GetMappedSectionID(address);
+                int sectionID = processManager.MappedSectionList.GetMappedSectionID(address);
 
                 if (sectionID >= 0)
                 {
@@ -548,7 +551,7 @@
                 ulong address = ulong.Parse(result_list_view.SelectedItems[0].
                     SubItems[RESULT_LIST_ADDRESS].Text, NumberStyles.HexNumber);
 
-                int sectionID = processManager.GetMappedSectionID(address);
+                int sectionID = processManager.MappedSectionList.GetMappedSectionID(address);
 
                 dump_dialog(sectionID);
             }
@@ -579,7 +582,7 @@
 
         private void section_list_box_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            processManager.SectionCheck(e.Index, e.NewValue == CheckState.Checked);
+            processManager.MappedSectionList.SectionCheck(e.Index, e.NewValue == CheckState.Checked);
         }
 
         void add_new_row_to_cheat_list_view(Cheat cheat)
@@ -593,7 +596,7 @@
             cheat_list_view_item.Cells[CHEAT_LIST_ADDRESS].Value = destination.Display();
             cheat_list_view_item.Cells[CHEAT_LIST_TYPE].Value = MemoryHelper.GetStringOfValueType(source.ValueType);
             cheat_list_view_item.Cells[CHEAT_LIST_VALUE].Value = source.Display();
-            cheat_list_view_item.Cells[CHEAT_LIST_SECTION].Value = processManager.GetSectionName(destination.GetSectionID());
+            cheat_list_view_item.Cells[CHEAT_LIST_SECTION].Value = processManager.MappedSectionList.GetSectionName(destination.GetSectionID());
             cheat_list_view_item.Cells[CHEAT_LIST_LOCK].Value = cheat.Lock;
             cheat_list_view_item.Cells[CHEAT_LIST_DESC].Value = cheat.Description;
         }
@@ -602,7 +605,7 @@
         {
             try
             {
-                int sectionID = processManager.GetMappedSectionID(address);
+                int sectionID = processManager.MappedSectionList.GetMappedSectionID(address);
 
                 if (sectionID == -1)
                 {
@@ -634,7 +637,7 @@
         {
             try
             {
-                int sectionID = processManager.GetMappedSectionID(address);
+                int sectionID = processManager.MappedSectionList.GetMappedSectionID(address);
 
                 if (sectionID == -1)
                 {
@@ -754,7 +757,7 @@
             bool lock_ = newAddress.Lock;
             string description = newAddress.Descriptioin;
 
-            int sectionID = processManager.GetMappedSectionID(address);
+            int sectionID = processManager.MappedSectionList.GetMappedSectionID(address);
 
             if (sectionID < 0)
             {
@@ -804,7 +807,7 @@
             }
 
             cheat_list_view.Rows.Clear();
-            cheatList.LoadFile(open_file_dialog.FileName, (string)processes_comboBox.SelectedItem, processManager);
+            cheatList.LoadFile(open_file_dialog.FileName, processManager, processes_comboBox);
 
             for (int i = 0; i < cheatList.Count; ++i)
             {
@@ -866,12 +869,13 @@
                 section_list_box.Enabled = true;
 
                 ProcessInfo processInfo = processManager.GetProcessInfo(processes_comboBox.Text);
-                processManager.InitMemorySectionList(processInfo);
+                Util.DefaultProcessID = processInfo.pid;
+                processManager.MappedSectionList.InitMemorySectionList(processInfo);
 
                 section_list_box.BeginUpdate();
                 for (int i = 0; i < processManager.MappedSectionList.Count; ++i)
                 {
-                    section_list_box.Items.Add(processManager.GetSectionName(i), false);
+                    section_list_box.Items.Add(processManager.MappedSectionList.GetSectionName(i), false);
                 }
                 section_list_box.EndUpdate();
             }
@@ -1150,7 +1154,7 @@
             DataGridViewSelectedRowCollection items = cheat_list_view.SelectedRows;
 
             ulong address = ulong.Parse((string)items[0].Cells[CHEAT_LIST_ADDRESS].Value, NumberStyles.HexNumber);
-            int sectionID = processManager.GetMappedSectionID(address);
+            int sectionID = processManager.MappedSectionList.GetMappedSectionID(address);
 
             if (sectionID >= 0)
             {
@@ -1174,11 +1178,31 @@
 
             DataGridViewSelectedRowCollection items = cheat_list_view.SelectedRows;
 
-            ulong address = ulong.Parse((string)items[0].Cells[CHEAT_LIST_ADDRESS].Value, NumberStyles.HexNumber);
-            string type = (string)items[0].Cells[CHEAT_LIST_TYPE].Value;
+            try
+            {
+                ulong address = ulong.Parse((string)items[0].Cells[CHEAT_LIST_ADDRESS].Value, NumberStyles.HexNumber);
+                string type = (string)items[0].Cells[CHEAT_LIST_TYPE].Value;
 
-            PointerFinder pointerFinder = new PointerFinder(this, address, type, processManager, cheat_list_view);
-            pointerFinder.Show();
+                PointerFinder pointerFinder = new PointerFinder(this, address, type, processManager, cheat_list_view);
+                pointerFinder.Show();
+            }
+            catch
+            {
+
+            }
+        }
+
+        private void version_list_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            switch (version_list.SelectedIndex)
+            {
+                case VERSION_LIST_405:
+                    Util.Version = 405;
+                    break;
+                case VERSION_LIST_455:
+                    Util.Version = 455;
+                    break;
+            }
         }
     }
 }

@@ -61,7 +61,7 @@ namespace PS4_Cheater
                     if (worker.CancellationPending) break;
 
                     producer_mutex.WaitOne();
-                    buffer_queue[productor_idx] = MemoryHelper.ReadMemory(address, (int)cur_length);
+                    //buffer_queue[productor_idx] = memoryHelper.ReadMemory(address, (int)cur_length);
                     productor_idx = (productor_idx + 1) % CONSTANT.MAX_PEEK_QUEUE;
                     consumer_mutex.Release();
 
@@ -109,7 +109,7 @@ namespace PS4_Cheater
         public void ResultListOfNewScan()
         {
             long processed_memory_len = 0;
-            ulong total_memory_size = processManager.TotalMemorySize + 1;
+            ulong total_memory_size = processManager.MappedSectionList.TotalMemorySize + 1;
 
             for (int section_idx = 0; section_idx < processManager.MappedSectionList.Count; ++section_idx)
             {
@@ -180,7 +180,7 @@ namespace PS4_Cheater
         public void ResultListOfNextScan()
         {
             long processed_memory_len = 0;
-            ulong total_memory_size = processManager.TotalMemorySize + 1;
+            ulong total_memory_size = processManager.MappedSectionList.TotalMemorySize + 1;
 
             for (int section_idx = 0; section_idx < processManager.MappedSectionList.Count; ++section_idx)
             {

@@ -134,6 +134,7 @@
     <Compile Include="PointerFinder.Designer.cs">
       <DependentUpon>PointerFinder.cs</DependentUpon>
     </Compile>
+    <Compile Include="PointerList.cs" />
     <Compile Include="ProcessManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

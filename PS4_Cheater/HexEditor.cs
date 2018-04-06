@@ -57,7 +57,7 @@ namespace PS4_Cheater
                 mem_size = section.Length - page_size * page;
             }
 
-            byte[] dst = MemoryHelper.ReadMemory(section.Start + (ulong)page * page_size, (int)mem_size);
+            byte[] dst = memoryHelper.ReadMemory(section.Start + (ulong)page * page_size, (int)mem_size);
             hexBox.ByteProvider = new MemoryViewByteProvider(dst);
 
             if (line != 0)
@@ -129,7 +129,7 @@ namespace PS4_Cheater
                 for (int i = 0; i < change_list.Count; ++i)
                 {
                     byte[] b = { buffer[change_list[i]]  };
-                    MemoryHelper.WriteMemory(section.Start + (ulong)(page * page_size + change_list[i]), b);
+                    memoryHelper.WriteMemory(section.Start + (ulong)(page * page_size + change_list[i]), b);
                 }
                 mvbp.change_list.Clear();
             }

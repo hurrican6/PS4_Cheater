@@ -10,348 +10,6 @@ using librpc;
 
 namespace PS4_Cheater
 {
-
-    [StructLayoutAttribute(LayoutKind.Sequential, Pack = 1)]
-    public struct Pointer
-    {
-        public ulong Address { get; }
-        public ulong PointerValue { get; }
-
-        public Pointer(ulong Address, ulong PointerValue)
-        {
-            this.Address = Address;
-            this.PointerValue = PointerValue;
-        }
-    }
-
-    public class PointerPath
-    {
-        public List<ulong> pointerPath = new List<ulong>();
-
-        public void AddRange(List<ulong> pointerList)
-        {
-            pointerPath.AddRange(pointerList);
-        }
-
-        public void Add(ulong pointer)
-        {
-            pointerPath.Add(pointer);
-        }
-
-        public ulong this[int index]
-        {
-            get {
-                return pointerPath[index];
-            }
-        }
-
-        public int Count { get { return pointerPath.Count; } }
-    }
-
-    public class PointerList
-    {
-        private List<Pointer> pointer_list_order_by_address;
-        private List<Pointer> pointer_list_order_by_pointer_value;
-
-        public bool Stop { get; set; }
-
-        public PointerList()
-        {
-            pointer_list_order_by_address = new List<Pointer>();
-            pointer_list_order_by_pointer_value = new List<Pointer>();
-        }
-
-        public delegate void NewPathGeneratedHandler(PointerList pointerList, List<long> path_offset, List<Pointer> path_address);
-
-        public event NewPathGeneratedHandler NewPathGeneratedEvent;
-
-        class ComparerByAddress : IComparer<Pointer>
-        {
-            public int Compare(Pointer x, Pointer y)
-            {
-                if (x.Address == y.Address)
-                {
-                    return 0;
-                }
-                else if (x.Address < y.Address) {
-                    return -1;
-                }
-                else
-                {
-                    return 1;
-                }
-            }
-        }
-
-        class ComparerByPointerValue : IComparer<Pointer>
-        {
-            public int Compare(Pointer x, Pointer y)
-            {
-                if (x.PointerValue == y.PointerValue)
-                {
-                    return 0;
-                }
-                else if (x.PointerValue < y.PointerValue)
-                {
-                    return -1;
-                }
-                else
-                {
-                    return 1;
-                }
-            }
-        }
-
-        public void Add(Pointer pointer)
-        {
-            pointer_list_order_by_address.Add(pointer);
-            pointer_list_order_by_pointer_value.Add(pointer);
-        }
-
-        public void Clear()
-        {
-            pointer_list_order_by_address.Clear();
-            pointer_list_order_by_pointer_value.Clear();
-        }
-
-        private static int BinarySearchByAddress(List<Pointer> pointerList, int low, int high, ulong address)
-        {
-            int mid = (low + high) / 2;
-            if (low > high)
-            {
-                return -1;
-            }
-            else
-            {
-                if (pointerList[mid].Address == address)
-                    return mid;
-                else if (pointerList[mid].Address > address)
-                {
-                    if (mid - 1 >= 0 && pointerList[mid - 1].Address <= address)
-                    {
-                        return mid - 1;
-                    }
-                    return BinarySearchByAddress(pointerList, low, mid - 1, address);
-                }
-                else
-                {
-                    if (mid + 1 < pointerList.Count && pointerList[mid + 1].Address >= address)
-                    {
-                        return mid + 1;
-                    }
-                    return BinarySearchByAddress(pointerList, mid + 1, high, address);
-                }
-            }
-        }
-
-        private static int BinarySearchByValue(List<Pointer> pointerList, int low, int high, ulong pointerValue)
-        {
-            int mid = (low + high) / 2;
-            if (low > high)
-            {
-                return -1;
-            }
-            else
-            {
-                if (pointerList[mid].PointerValue == pointerValue)
-                    return mid;
-                else if (pointerList[mid].PointerValue > pointerValue)
-                    return BinarySearchByValue(pointerList, low, mid - 1, pointerValue);
-                else
-                    return BinarySearchByValue(pointerList, mid + 1, high, pointerValue);
-            }
-        }
-
-        private List<Pointer> GetPointerListByValue(ulong pointerValue)
-        {
-            List<Pointer> pointerList = new List<Pointer>();
-            int index = BinarySearchByValue(pointer_list_order_by_pointer_value, 0, pointer_list_order_by_pointer_value.Count - 1, pointerValue);
-
-            if (index < 0) return pointerList;
-
-            int start = index;
-            for (; start >= 0; --start)
-            {
-                if (pointer_list_order_by_pointer_value[start].PointerValue != pointerValue)
-                {
-                    break;
-                }
-            }
-
-            bool find = false;
-            for (int i = start; i < pointer_list_order_by_pointer_value.Count; ++i)
-            {
-                if (pointer_list_order_by_pointer_value[i].PointerValue == pointerValue)
-                {
-                    find = true;
-                    pointerList.Add(pointer_list_order_by_pointer_value[i]);
-                }
-                else
-                {
-                    if (find) break;
-                }
-            }
-
-            return pointerList;
-        }
-
-        private int GetPointerByAddress(ulong address, ref Pointer pointer)
-        {
-            int index = BinarySearchByAddress(pointer_list_order_by_address, 0, pointer_list_order_by_address.Count - 1, address);
-            if (index < 0) return index;
-
-            pointer = pointer_list_order_by_address[index];
-            return index;
-        }
-
-        private void PointerFinder(List<long> path_offset, List<Pointer> path_address,
-            ulong address, List<int> range, int level, ref bool changed)
-        {
-
-            if (level == range.Count)
-            {
-                changed = false;
-                //NewPathGeneratedEvent?.Invoke(this, path_offset, path_address);
-                return;
-            }
-
-            if (Stop)
-            {
-                return;
-            }
-
-            bool local_changed = false;
-            if ((level + 1) < range.Count)
-            {
-
-                Pointer position = new Pointer();
-                int index = GetPointerByAddress(address, ref position);
-                int counter = 0;
-
-                for (int i = index; i >= 0; i--)
-                {
-                    if (Stop)
-                    {
-                        break;
-                    }
-
-                    if ((long)pointer_list_order_by_address[i].Address + range[0] < (long)address)
-                    {
-                        break;
-                    }
-
-                    List<Pointer> pointerList = GetPointerListByValue(pointer_list_order_by_address[i].Address);
-
-                    if (pointerList.Count > 0)
-                    {
-                        path_offset.Add((long)(address - pointer_list_order_by_address[i].Address));
-
-                        for (int j = 0; j < pointerList.Count; ++j)
-                        {
-                            bool in_stack = false;
-                            for (int k = 0; k < path_address.Count; ++k)
-                            {
-                                if (path_address[k].PointerValue == pointerList[j].PointerValue ||
-                                    path_address[k].Address == pointerList[j].Address)
-                                {
-                                    in_stack = true;
-                                    break;
-                                }
-                            }
-                            if (in_stack)
-                            {
-                                continue;
-                            }
-
-                            bool sub_changed = false;
-
-                            path_address.Add(pointerList[j]);
-                            PointerFinder(path_offset, path_address, pointerList[j].Address, range, level + 1, ref sub_changed);
-                            path_address.RemoveAt(path_address.Count - 1);
-
-                            local_changed |= sub_changed;
-                        }
-
-                        path_offset.RemoveAt(path_offset.Count - 1);
-
-                        if (counter > 1)
-                        {
-                            break;
-                        }
-                    }
-
-                    ++counter;
-                }
-            }
-            else
-            {
-                local_changed = true;
-            }
-
-            if (Stop)
-            {
-                return;
-            }
-
-            if (!local_changed)
-            {
-                changed = true;
-                NewPathGeneratedEvent?.Invoke(this, path_offset, path_address);
-            }
-        }
-
-        public void Save()
-        {
-            string ADDRESS_NAME = "D:\\name.txt";
-
-            string[] lines = new string[pointer_list_order_by_address.Count];
-
-            for (int i = 0; i< pointer_list_order_by_address.Count; ++i)
-            {
-                lines[i] = pointer_list_order_by_address[i].Address.ToString() + " " + pointer_list_order_by_address[i].PointerValue.ToString();
-            }
-            File.WriteAllLines(ADDRESS_NAME, lines);
-        }
-
-        public void Load()
-        {
-            string ADDRESS_NAME = "D:\\name.txt";
-
-            string[] lines = File.ReadAllLines(ADDRESS_NAME);
-
-            for (int i = 0; i < lines.Length; ++i)
-            {
-                string[] elems = lines[i].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-                ulong Address = UInt64.Parse(elems[0]);
-                ulong PointerValue = UInt64.Parse(elems[1]);
-
-                Pointer pointer = new Pointer(Address, PointerValue);
-                pointer_list_order_by_address.Add(pointer);
-                pointer_list_order_by_pointer_value.Add(pointer);
-            }
-
-            pointer_list_order_by_pointer_value.Sort(new ComparerByPointerValue());
-
-        }
-
-        public void Init()
-        {
-            pointer_list_order_by_address.Sort(new ComparerByAddress());
-            pointer_list_order_by_pointer_value.Sort(new ComparerByPointerValue());
-        }
-
-        public void FindPointerList(ulong address, List<int> range)
-        {
-            List<long> path_offset = new List<long>();
-            List<Pointer> path_address = new List<Pointer>();
-            bool changed = true;
-            PointerFinder(path_offset, path_address, address, range, 0, ref changed);
-        }
-
-        public int Count { get { return pointer_list_order_by_address.Count; } }
-    }
-
     public class ResultList
     {
         private const int buffer_size = 4096 * 16;
@@ -574,7 +232,7 @@ namespace PS4_Cheater
                     length -= cur_length;
                 }
 
-                byte[] buffer = MemoryHelper.ReadMemory(address, (int)cur_length);
+                byte[] buffer = memoryHelper.ReadMemory(address, (int)cur_length);
 
                 byte[] default_value_0 = null;
                 if (memoryHelper.ParseFirstValue)
@@ -638,7 +296,7 @@ namespace PS4_Cheater
                     length -= cur_length;
                 }
 
-                byte[] buffer = MemoryHelper.ReadMemory(address, (int)cur_length);
+                byte[] buffer = memoryHelper.ReadMemory(address, (int)cur_length);
 
                 memoryHelper.CompareWithMemoryBufferPointerScanner(processManager, buffer, pointerList, address);
 
@@ -647,52 +305,62 @@ namespace PS4_Cheater
         }
     }
 
-public class ProcessManager
+    public class MappedSectionList
     {
         public ulong TotalMemorySize { get; set; }
 
-        public List<MappedSection> MappedSectionList { get; }
+        private List<MappedSection> mapped_section_list = new List<MappedSection>();
 
-        public ProcessManager()
+        public MappedSectionList()
         {
-            MappedSectionList = new List<MappedSection>();
+
         }
 
-        public MappedSection GetMappedSection(int idx)
+        public MappedSection this[int index]
         {
-            return MappedSectionList[idx];
-        }
-
-        public int GetSectionInfoCount()
-        {
-            return MappedSectionList.Count;
-        }
-
-        private int BinarySearch(int low, int high, ulong address)
-        {
-            int mid = (low + high) / 2;
-            if (low > high)
-                return -1;
-            else
+            get
             {
-                if ((MappedSectionList[mid].Start <= address) && (MappedSectionList[mid].Start + (ulong)(MappedSectionList[mid].Length) >= address))
-                    return mid;
-                else if (MappedSectionList[mid].Start > address)
-                    return BinarySearch(low, mid - 1, address);
-                else
-                    return BinarySearch(mid + 1, high, address);
+                return mapped_section_list[index];
             }
         }
+
+        private int FindSectionID(ulong address)
+        {
+            int low = 0;
+            int high = mapped_section_list.Count - 1;
+            int middle;
+
+            while (low <= high)
+            {
+                middle = (low + high) / 2;
+                if (address >= mapped_section_list[middle].Start + (ulong)(mapped_section_list[middle].Length))
+                {
+                    low = middle + 1;   //查找数组后部分  
+                }
+                else if (address < mapped_section_list[middle].Start)
+                {
+                    high = middle - 1;  //查找数组前半部分  
+                }
+                else
+                {
+                    return middle;  //找到用户要查找的数字，返回下标  
+                }
+            }
+
+            return -1;
+        }
+
+
 
         public int GetMappedSectionID(ulong address)
         {
             ulong start = 0;
             ulong end = 0;
 
-            if (MappedSectionList.Count > 0)
+            if (mapped_section_list.Count > 0)
             {
-                start = MappedSectionList[0].Start;
-                end = MappedSectionList[MappedSectionList.Count - 1].Start + (ulong)MappedSectionList[MappedSectionList.Count - 1].Length;
+                start = mapped_section_list[0].Start;
+                end = mapped_section_list[mapped_section_list.Count - 1].Start + (ulong)mapped_section_list[mapped_section_list.Count - 1].Length;
             }
 
             if (start > address || end < address)
@@ -700,7 +368,7 @@ public class ProcessManager
                 return -1;
             }
 
-            return BinarySearch(0, MappedSectionList.Count - 1, address);
+            return FindSectionID(address);
         }
 
         public MappedSection GetMappedSection(ulong address)
@@ -710,44 +378,22 @@ public class ProcessManager
             {
                 return null;
             }
-            return MappedSectionList[sectionID];
+            return mapped_section_list[sectionID];
         }
 
         public void SectionCheck(int idx, bool _checked)
         {
-            MappedSectionList[idx].Check = _checked;
-            if (MappedSectionList[idx].Check)
+            mapped_section_list[idx].Check = _checked;
+            if (mapped_section_list[idx].Check)
             {
-                TotalMemorySize += (ulong)MappedSectionList[idx].Length;
+                TotalMemorySize += (ulong)mapped_section_list[idx].Length;
             }
             else
             {
-                TotalMemorySize -= (ulong)MappedSectionList[idx].Length;
+                TotalMemorySize -= (ulong)mapped_section_list[idx].Length;
             }
         }
 
-        public ProcessInfo GetProcessInfo(string process_name)
-        {
-            ProcessList processList = MemoryHelper.GetProcessList();
-            ProcessInfo processInfo = null;
-            foreach (Process process in processList.processes)
-            {
-                if (process.name == process_name)
-                {
-                    processInfo = MemoryHelper.GetProcessInfo(process.pid);
-                    MemoryHelper.ProcessID = process.pid;
-                    break;
-                }
-            }
-
-            return processInfo;
-        }
-
-        public string GetProcessName(int idx)
-        {
-            ProcessList processList = MemoryHelper.GetProcessList();
-            return processList.processes[idx].name;
-        }
 
         public string GetSectionName(int section_idx)
         {
@@ -755,7 +401,7 @@ public class ProcessManager
             {
                 return "sectioni wrong!";
             }
-            MappedSection sectionInfo = MappedSectionList[section_idx];
+            MappedSection sectionInfo = mapped_section_list[section_idx];
 
             StringBuilder section_name = new StringBuilder();
             section_name.Append(sectionInfo.Name + "-");
@@ -766,9 +412,23 @@ public class ProcessManager
             return section_name.ToString();
         }
 
+        public List<MappedSection> GetMappedSectionList(string name, int prot)
+        {
+            List<MappedSection> result_list = new List<MappedSection>();
+            for (int idx = 0; idx < mapped_section_list.Count; ++idx)
+            {
+                if (mapped_section_list[idx].Prot == prot &&
+                    mapped_section_list[idx].Name.StartsWith(name))
+                {
+                    result_list.Add(mapped_section_list[idx]);
+                }
+            }
+            return result_list;
+        }
+
         public void InitMemorySectionList(ProcessInfo pi)
         {
-            MappedSectionList.Clear();
+            mapped_section_list.Clear();
             TotalMemorySize = 0;
 
             for (int i = 0; i < pi.entries.Length; i++)
@@ -809,7 +469,7 @@ public class ProcessManager
                         mappedSection.Check = false;
                         mappedSection.Prot = entry.prot;
 
-                        MappedSectionList.Add(mappedSection);
+                        mapped_section_list.Add(mappedSection);
 
                         start += cur_length;
                         ++idx;
@@ -822,11 +482,11 @@ public class ProcessManager
         public ulong TotalResultCount()
         {
             ulong total_result_count = 0;
-            for (int idx = 0; idx < MappedSectionList.Count; ++idx)
+            for (int idx = 0; idx < mapped_section_list.Count; ++idx)
             {
-                if (MappedSectionList[idx].Check && MappedSectionList[idx].ResultList != null)
+                if (mapped_section_list[idx].Check && mapped_section_list[idx].ResultList != null)
                 {
-                    total_result_count += (ulong)MappedSectionList[idx].ResultList.Count;
+                    total_result_count += (ulong)mapped_section_list[idx].ResultList.Count;
                 }
             }
             return total_result_count;
@@ -834,13 +494,49 @@ public class ProcessManager
 
         public void ClearResultList()
         {
-            for (int idx = 0; idx < MappedSectionList.Count; ++idx)
+            for (int idx = 0; idx < mapped_section_list.Count; ++idx)
             {
-                if (MappedSectionList[idx].ResultList != null)
+                if (mapped_section_list[idx].ResultList != null)
                 {
-                    MappedSectionList[idx].ResultList.Clear();
+                    mapped_section_list[idx].ResultList.Clear();
                 }
             }
         }
+
+        public int Count { get { return mapped_section_list.Count; } }
+    }
+
+    public class ProcessManager
+    {
+        public MappedSectionList MappedSectionList { get; }
+        
+
+        public ProcessManager()
+        {
+            MappedSectionList = new MappedSectionList();
+        }
+
+        public ProcessInfo GetProcessInfo(string process_name)
+        {
+            ProcessList processList = MemoryHelper.GetProcessList();
+            ProcessInfo processInfo = null;
+            foreach (Process process in processList.processes)
+            {
+                if (process.name == process_name)
+                {
+                    processInfo = MemoryHelper.GetProcessInfo(process.pid);
+                    break;
+                }
+            }
+
+            return processInfo;
+        }
+
+        public string GetProcessName(int idx)
+        {
+            ProcessList processList = MemoryHelper.GetProcessList();
+            return processList.processes[idx].name;
+        }
+
     }
 }

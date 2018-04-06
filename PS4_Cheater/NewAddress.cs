@@ -25,7 +25,7 @@ namespace PS4_Cheater
         {
             InitializeComponent();
 
-            this.MemoryHelper = new MemoryHelper();
+            this.MemoryHelper = new MemoryHelper(true, 0);
             this.ProcessManager = ProcessManager;
         }
 

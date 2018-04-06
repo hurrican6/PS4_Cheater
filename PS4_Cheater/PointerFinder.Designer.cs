@@ -86,6 +86,7 @@
             // 
             this.level_updown.Location = new System.Drawing.Point(11, 11);
             this.level_updown.Name = "level_updown";
+            this.level_updown.ReadOnly = true;
             this.level_updown.Size = new System.Drawing.Size(120, 21);
             this.level_updown.TabIndex = 6;
             // 

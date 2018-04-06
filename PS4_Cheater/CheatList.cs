@@ -42,7 +42,7 @@ namespace PS4_Cheater
 
         private ValueType _valueType;
 
-        protected MemoryHelper MemoryHelper = new MemoryHelper();
+        protected MemoryHelper MemoryHelper = new MemoryHelper(true, 0);
 
         public ProcessManager ProcessManager { get; set; }
 
@@ -252,7 +252,7 @@ namespace PS4_Cheater
 
         public override int GetSectionID()
         {
-            return ProcessManager.GetMappedSectionID(Address);
+            return ProcessManager.MappedSectionList.GetMappedSectionID(Address);
         }
 
         public override void Set(CheatOperator SourceCheatOperator, int idx = 0)
@@ -269,7 +269,7 @@ namespace PS4_Cheater
         {
             string save_buf = "";
 
-            int sectionID = ProcessManager.GetMappedSectionID(Address);
+            int sectionID = ProcessManager.MappedSectionList.GetMappedSectionID(Address);
             MappedSection mappedSection = ProcessManager.MappedSectionList[sectionID];
             save_buf += sectionID + "|";
             save_buf += String.Format("{0:X}", Address - mappedSection.Start) + "|";
@@ -280,7 +280,7 @@ namespace PS4_Cheater
         {
             string save_buf = "";
 
-            int sectionID = ProcessManager.GetMappedSectionID(Address);
+            int sectionID = ProcessManager.MappedSectionList.GetMappedSectionID(Address);
             MappedSection mappedSection = ProcessManager.MappedSectionList[sectionID];
             save_buf += String.Format("@{0:X}", Address) + "_";
             save_buf += sectionID + "_";
@@ -369,7 +369,7 @@ namespace PS4_Cheater
 
         public override int GetSectionID()
         { 
-            return ProcessManager.GetMappedSectionID(GetAddress());
+            return ProcessManager.MappedSectionList.GetMappedSectionID(GetAddress());
         }
 
         public override void Set(CheatOperator SourceCheatOperator, int idx = 0)
@@ -745,6 +745,9 @@ namespace PS4_Cheater
 
         private const int CHEAT_CODE_HEADER_VERSION = 0;
         private const int CHEAT_CODE_HEADER_PROCESS_NAME = 1;
+        private const int CHEAT_CODE_HEADER_PROCESS_ID   = 2;
+        private const int CHEAT_CODE_HEADER_PROCESS_VER  = 3;
+
         private const int CHEAT_CODE_HEADER_ELEMENT_COUNT = CHEAT_CODE_HEADER_PROCESS_NAME + 1;
 
         private const int CHEAT_CODE_TYPE = 0;
@@ -773,7 +776,7 @@ namespace PS4_Cheater
             return false;
         }
 
-        public bool LoadFile(string path, string processName, ProcessManager processManager)
+        public bool LoadFile(string path, ProcessManager processManager, ComboBox comboBox)
         {
             string[] cheats = File.ReadAllLines(path);
 
@@ -807,10 +810,52 @@ namespace PS4_Cheater
             }
 
             string process_name = header_items[CHEAT_CODE_HEADER_PROCESS_NAME];
-            if (process_name != processName)
+            if (process_name != (string)comboBox.SelectedItem)
             {
-                MessageBox.Show("Invalid process.");
+                comboBox.SelectedItem = process_name;
+            }
+
+            if (process_name != (string)comboBox.SelectedItem)
+            {
+                MessageBox.Show("Invalid process or refresh processes first.");
                 return false;
+            }
+
+            string game_id = "";
+            string game_ver = "";
+
+            if (header_items.Length > CHEAT_CODE_HEADER_PROCESS_ID)
+            {
+                game_id = header_items[CHEAT_CODE_HEADER_PROCESS_ID];
+                game_id = game_id.Substring(3);
+            }
+
+            if (header_items.Length > CHEAT_CODE_HEADER_PROCESS_VER)
+            {
+                game_ver = header_items[CHEAT_CODE_HEADER_PROCESS_VER];
+                game_ver = game_ver.Substring(4);
+            }
+
+            if (game_id != "" && game_ver != "")
+            {
+                GameInfo gameInfo = new GameInfo();
+                if (gameInfo.GameID != game_id)
+                {
+                    if (MessageBox.Show("Your Game ID(" + gameInfo.GameID + ") is different with cheat file(" + game_id + "), still load?",
+                        "Invalid game ID", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                    {
+                        return false;
+                    }
+                }
+
+                if (gameInfo.Version != game_ver)
+                {
+                    if (MessageBox.Show("Your game version(" + gameInfo.Version + ") is different with cheat file(" + game_ver + "), still load?",
+                        "Invalid game version", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                    {
+                        return false;
+                    }
+                }
             }
 
             for (int i = 1; i < cheats.Length; ++i)
@@ -853,7 +898,14 @@ namespace PS4_Cheater
 
         public void SaveFile(string path, string prcessName, ProcessManager processManager)
         {
-            string save_buf = CONSTANT.MAJOR_VERSION + "." + CONSTANT.SECONDARY_VERSION + "|" + prcessName + "\n";
+            GameInfo gameInfo = new GameInfo();
+            string save_buf = CONSTANT.MAJOR_VERSION + "."
+                + CONSTANT.SECONDARY_VERSION
+                + "|" + prcessName
+                + "|ID:" + gameInfo.GameID
+                + "|VER:" + gameInfo.Version
+                + "|FM:" + Util.Version
+                + "\n";
 
             for (int i = 0; i < cheat_list.Count; ++i)
             {

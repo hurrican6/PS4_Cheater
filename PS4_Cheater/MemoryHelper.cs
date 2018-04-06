@@ -46,11 +46,25 @@ namespace PS4_Cheater
     {
         public static PS4RPC ps4 = null;
         private static Mutex mutex;
-        public static int ProcessID;
+        private int SelfProcessID;
+        private int ProcessID {
+            get {
+                if (DefaultProcessID)
+                    return Util.DefaultProcessID;
+                return SelfProcessID;
+            }
+        }
+        private bool DefaultProcessID;
 
         static MemoryHelper()
         {
             mutex = new Mutex();
+        }
+
+        public MemoryHelper(bool defaultProcessID, int processID)
+        {
+            this.SelfProcessID = processID;
+            this.DefaultProcessID = defaultProcessID;
         }
 
         public static bool Connect(string ip)
@@ -109,7 +123,7 @@ namespace PS4_Cheater
         public bool ParseFirstValue { get; set; }
         public bool ParseSecondValue { get; set; }
 
-        public static byte[] ReadMemory(ulong address, int length)
+        public byte[] ReadMemory(ulong address, int length)
         {
             mutex.WaitOne();
             try
@@ -125,7 +139,7 @@ namespace PS4_Cheater
             return new byte[length];
         }
 
-        public static void WriteMemory(ulong address, byte[] data)
+        public void WriteMemory(ulong address, byte[] data)
         {
             mutex.WaitOne();
             try
@@ -361,7 +375,7 @@ namespace PS4_Cheater
             {
                 Buffer.BlockCopy(buffer, i, address_buf, 0, 8);
                 ulong address = BitConverter.ToUInt64(address_buf, 0);
-                int sectionID = processManager.GetMappedSectionID(address);
+                int sectionID = processManager.MappedSectionList.GetMappedSectionID(address);
                 if (sectionID != -1)
                 {
                     Pointer pointer = new Pointer(base_address + (ulong)i, address);
