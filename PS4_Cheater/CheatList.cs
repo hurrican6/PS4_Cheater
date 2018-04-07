@@ -211,10 +211,7 @@ namespace PS4_Cheater
         public override string Dump(bool simpleFormat)
         {
             string save_buf = "";
-            if (Offset >= 0)
-            {
-                save_buf += "+";
-            }
+            save_buf += "+";
             save_buf += Offset.ToString("X");
             return save_buf;
         }
