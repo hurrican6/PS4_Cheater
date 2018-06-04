@@ -801,7 +801,7 @@ namespace PS4_Cheater
                 ulong.TryParse(version[1], out secondary_version);
             }
 
-            if (major_version > CONSTANT.MAJOR_VERSION || secondary_version > CONSTANT.SECONDARY_VERSION)
+            if (major_version > CONSTANT.MAJOR_VERSION || (major_version == CONSTANT.MAJOR_VERSION && secondary_version > CONSTANT.SECONDARY_VERSION))
             {
                 return false;
             }
