@@ -620,8 +620,8 @@ namespace PS4_Cheater
             this.version_list.ForeColor = System.Drawing.Color.White;
             this.version_list.FormattingEnabled = true;
             this.version_list.Items.AddRange(new object[] {
-            "4.05",
-            "4.55","5.05"});
+            "5.05",
+            "4.55","4.05"});
             this.version_list.Location = new System.Drawing.Point(10, 4);
             this.version_list.Name = "version_list";
             this.version_list.Size = new System.Drawing.Size(80, 20);

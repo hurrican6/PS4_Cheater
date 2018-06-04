@@ -34,9 +34,9 @@
         private const int RESULT_LIST_VALUE = 2;
         private const int RESULT_LIST_SECTION = 4;
 
-        private const int VERSION_LIST_405 = 0;
+        private const int VERSION_LIST_405 = 2;
         private const int VERSION_LIST_455 = 1;
-        private const int VERSION_LIST_505 = 2;
+        private const int VERSION_LIST_505 = 0;
 
         private const int VERSION_LIST_DEFAULT = VERSION_LIST_505;
 
