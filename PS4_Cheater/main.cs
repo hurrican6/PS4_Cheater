@@ -36,6 +36,7 @@
 
         private const int VERSION_LIST_405 = 0;
         private const int VERSION_LIST_455 = 1;
+        private const int VERSION_LIST_505 = 2;
 
         private const int VERSION_LIST_DEFAULT = VERSION_LIST_405;
 
@@ -104,7 +105,11 @@
 
             string version = Config.getSetting("ps4 version");
             string ip = Config.getSetting("ip");
-
+			if (version == "5.05")
+            {
+                version_list.SelectedIndex = VERSION_LIST_505;
+                Util.Version = 505;
+            }
             if (version == "4.05")
             {
                 version_list.SelectedIndex = VERSION_LIST_405;
@@ -144,6 +149,9 @@
                     break;
                 case VERSION_LIST_455:
                     version = "4.55";
+                    break;
+				case VERSION_LIST_505:
+                    version = "5.05";
                     break;
                 default:
                     break;
@@ -884,12 +892,13 @@
                 MessageBox.Show(exception.Message);
             }
         }
-
+		
         private void get_processes_btn_Click(object sender, EventArgs e)
         {
             try
             {
-                MemoryHelper.Connect(ip_box.Text);
+				
+                MemoryHelper.Connect(ip_box.Text,(Util.Version == 505));
 
                 this.processes_comboBox.Items.Clear();
                 ProcessList pl = MemoryHelper.GetProcessList();
@@ -926,6 +935,9 @@
                         break;
                     case VERSION_LIST_455:
                         patch_path += @"\4.55\";
+                        break;
+					case VERSION_LIST_505:
+                        patch_path += @"\5.05\";
                         break;
                     default:
                         throw new System.ArgumentException("Unknown version.");
@@ -1198,9 +1210,15 @@
             {
                 case VERSION_LIST_405:
                     Util.Version = 405;
+					
                     break;
                 case VERSION_LIST_455:
                     Util.Version = 455;
+					
+                    break;
+				case VERSION_LIST_505:
+                    Util.Version = 505;
+					
                     break;
             }
         }

@@ -24,6 +24,12 @@ namespace PS4_Cheater
         const int GAME_INFO_4_55_ID_OFFSET = 0XA0;
         const int GAME_INFO_4_55_VERSION_OFFSET = 0XC8;
 
+		const string GAME_INFO_5_05_PROCESS_NAME = "SceCdlgApp";
+        const string GAME_INFO_5_05_SECTION_NAME = "libSceCdlgUtilServer.sprx";
+        const int GAME_INFO_5_05_SECTION_PROT = 3;
+        const int GAME_INFO_5_05_ID_OFFSET = 0XA0;
+        const int GAME_INFO_5_05_VERSION_OFFSET = 0XC8;
+		
         public string GameID = "";
         public string Version = "";
 
@@ -50,6 +56,13 @@ namespace PS4_Cheater
                     id_offset = GAME_INFO_4_55_ID_OFFSET;
                     version_offset = GAME_INFO_4_55_VERSION_OFFSET;
                     section_prot = GAME_INFO_4_55_SECTION_PROT;
+                    break;
+				case 505:
+                    process_name = GAME_INFO_5_05_PROCESS_NAME;
+                    section_name = GAME_INFO_5_05_SECTION_NAME;
+                    id_offset = GAME_INFO_5_05_ID_OFFSET;
+                    version_offset = GAME_INFO_5_05_VERSION_OFFSET;
+                    section_prot = GAME_INFO_5_05_SECTION_PROT;
                     break;
                 default:
                     break;
@@ -90,7 +103,7 @@ namespace PS4_Cheater
 
         public const uint MAJOR_VERSION = 1;
         public const uint SECONDARY_VERSION = 4;
-        public const uint THIRD_VERSION = 3;
+        public const uint THIRD_VERSION = 4;
 
         public const string EXACT_VALUE = "Exact Value";
         public const string FUZZY_VALUE = "Fuzzy Value";

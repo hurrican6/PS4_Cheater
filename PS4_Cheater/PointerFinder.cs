@@ -152,14 +152,21 @@ namespace PS4_Cheater
                 find_btn.Text = "First Scan";
             }
         }
-
+		bool Confirmation;
         private void next_btn_Click(object sender, EventArgs e)
         {
+			if (!Confirmation)
+            {
+				Confirmation = true;
+                MessageBox.Show("Verify if you're connected!");
+			}
+			else{
             ulong address = ulong.Parse(address_box.Text, System.Globalization.NumberStyles.HexNumber);
             result_counter = 0;
             pointerList.Stop = false;
             next_pointer_finder_worker.RunWorkerAsync(new PointerFinderWorkerArgs(address, null));
-
+			Confirmation = false;
+			}
             //DoWorkEventArgs doWorkEventArgs = new DoWorkEventArgs(new PointerFinderWorkerArgs(address, null));
             //next_pointer_finder_worker_DoWork(null, doWorkEventArgs);
         }

@@ -67,12 +67,12 @@ namespace PS4_Cheater
             this.DefaultProcessID = defaultProcessID;
         }
 
-        public static bool Connect(string ip)
+        public static bool Connect(string ip, bool is505)
         {
             try
             {
                 mutex.WaitOne();
-                ps4 = new PS4RPC(ip);
+                ps4 = new PS4RPC(ip, is505);
                 ps4.Connect();
                 mutex.ReleaseMutex();
                 return true;
