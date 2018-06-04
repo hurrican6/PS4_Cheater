@@ -38,7 +38,7 @@
         private const int VERSION_LIST_455 = 1;
         private const int VERSION_LIST_505 = 2;
 
-        private const int VERSION_LIST_DEFAULT = VERSION_LIST_405;
+        private const int VERSION_LIST_DEFAULT = VERSION_LIST_505;
 
         private string[] SEARCH_BY_FLOAT_FIRST = new string[]
         {
@@ -110,7 +110,7 @@
                 version_list.SelectedIndex = VERSION_LIST_505;
                 Util.Version = 505;
             }
-            if (version == "4.05")
+            else if (version == "4.05")
             {
                 version_list.SelectedIndex = VERSION_LIST_405;
                 Util.Version = 405;
@@ -122,7 +122,7 @@
             }
             else
             {
-                Util.Version = 405;
+                Util.Version = 505;
                 version_list.SelectedIndex = VERSION_LIST_DEFAULT;
             }
 
