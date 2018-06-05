@@ -947,7 +947,7 @@
                 Thread.Sleep(1000);
                 this.msg.Text = "Injecting kpayload.elf...";
                 this.send_pay_load(this.ip_box.Text, patch_path + @"kpayload.elf", 9023);
-                Thread.Sleep(1000);
+                Thread.Sleep(2500);
                 this.msg.ForeColor = Color.Green;
                 this.msg.Text = "Payload injected successfully!";
             }

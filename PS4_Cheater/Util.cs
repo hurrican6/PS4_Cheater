@@ -103,7 +103,7 @@ namespace PS4_Cheater
 
         public const uint MAJOR_VERSION = 1;
         public const uint SECONDARY_VERSION = 4;
-        public const uint THIRD_VERSION = 4;
+        public const uint THIRD_VERSION = 5;
 
         public const string EXACT_VALUE = "Exact Value";
         public const string FUZZY_VALUE = "Fuzzy Value";
